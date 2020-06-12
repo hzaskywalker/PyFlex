@@ -9,7 +9,7 @@
 #include <pybind11/pytypes.h>
 #include <pybind11/stl.h>
 
-#include "demo/main_python.cpp" //we can do this because of the FleX_INCLUDE_DIR in FindFleX.cmake
+#include "body.cpp" //we can do this because of the FleX_INCLUDE_DIR in FindFleX.cmake
 #include <stdio.h>
 
 int add(int i, int j) {

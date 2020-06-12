@@ -35,7 +35,7 @@ class CMakeBuild(build_ext):
         if FleX_ROOT is not None:
             cmake_args += ['-DFleX_ROOT=' + FleX_ROOT]
 
-        build_args += ['--', '-j2']
+        build_args += ['--', '-j10']
 
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
