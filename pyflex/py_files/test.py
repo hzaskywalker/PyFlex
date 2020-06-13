@@ -42,12 +42,17 @@ def test1():
 def test2():
     import pyflex
     sim = pyflex.Simulator(rendering=True)
-    sim.set_scene("Bananas")
-    sim.reset()
+    scene = sim.get_scene()
+    s = 0.1 * 0.5
+    bunny = pyflex.Shape(
+        "bunny",
+        "../../data/bunny.ply", [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], 0, [0, 0, 0, 0], 1., spacing=s
+    )
+    scene.add(bunny)
+    sim.reset(center=False)
     while True:
         q = sim.step()
 
 
 if __name__ == '__main__':
-    #test2()
-    test1()
+    test2()

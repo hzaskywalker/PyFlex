@@ -1,4 +1,5 @@
 #include "demo.h"
+#include <Eigen/Dense>
 
 class MyScene;
 class Object;
@@ -12,22 +13,27 @@ using ParticleShapePtr=std::shared_ptr<ParticleShape>;
 class Object
 {
 public:
-    Object(const char *name) : mName(name) {}
+    Object(const string name) : mName(name) {}
     virtual void Initialize(int group) = 0;
-    const char *mName;
+    const string mName;
 };
+
+using XVec3=Eigen::Vector3f;
+using XVec4=Eigen::Vector4f;
+
 
 class ParticleShape : public Object
 {
 public:
-    ParticleShape(const char *name, const char *filename, Vec3 lower, Vec3 scale, float rotation, Vec4 color, float invMass) : Object(name), filename(filename), lower(lower), scale(scale), rotation(rotation), spacing(0.0f), velocity(Vec3(0.0f)), invMass(invMass), rigid(true), rigidStiffness(1.), skin(true), jitter(0.0f), skinOffset(0.0f), skinExpand(0.0f), color(color), springStiffness(0.0f) {}
+    ParticleShape(string _name, string _filename, XVec3 lower, XVec3 scale, float rotation, XVec4 color, float invMass, float spacing=0.05f) : Object(_name), filename(_filename), lower(lower.data()), scale(scale.data()), rotation(rotation), spacing(spacing), velocity(Vec3(0.0f)), invMass(invMass), rigid(true), rigidStiffness(1.), skin(true), jitter(0.0f), skinOffset(0.0f), skinExpand(0.0f), color(color.data()), springStiffness(0.0f) {
+    }
 
     void Initialize(int group)
     {
-        CreateParticleShape(GetFilePathByPlatform(filename).c_str(), lower, scale, rotation, spacing, velocity, invMass, rigid, rigidStiffness, NvFlexMakePhase(group, 0), skin, jitter, skinOffset, skinExpand, color, springStiffness);
+        CreateParticleShape(GetFilePathByPlatform(filename.c_str()).c_str(), lower, scale, rotation, spacing, velocity, invMass, rigid, rigidStiffness, NvFlexMakePhase(group, 0), skin, jitter, skinOffset, skinExpand, color, springStiffness);
     }
 
-    const char *filename;
+    const string filename;
     Vec3 lower;
     Vec3 scale;
     float rotation;
@@ -112,6 +118,7 @@ public:
     {
         objects.push_back(obj);
     }
+
     vector<ObjectPtr> objects;
 };
 
@@ -148,7 +155,6 @@ public:
 
     void set_scene(char* name){
         for(int i =0;i<g_scenes.size();++i){
-            cout<<g_scenes[i]->mName<<" "<<name<<endl;
             if(strcmp(g_scenes[i]->mName, name)==0){
                 scene_id = i;
                 break;
