@@ -1018,9 +1018,10 @@ void Init(int scene, bool centerCamera = true)
 	}
 }
 
-void Reset()
+void Reset(bool centerCamera = false)
 {
-	Init(g_scene, false);
+	cout<<"Center"<<" "<<centerCamera<<endl;
+	Init(g_scene, centerCamera);
 }
 
 void Shutdown()

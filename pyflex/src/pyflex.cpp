@@ -9,7 +9,7 @@
 #include <pybind11/pytypes.h>
 #include <pybind11/stl.h>
 
-#include "body.cpp" //we can do this because of the FleX_INCLUDE_DIR in FindFleX.cmake
+#include "main.cpp" //we can do this because of the FleX_INCLUDE_DIR in FindFleX.cmake
 #include <stdio.h>
 
 int add(int i, int j) {
@@ -52,6 +52,23 @@ PYBIND11_MODULE(pyflex, m) {
 
 
     m.def("subtract", [](int i, int j) { return i - j; }, "Subtract two numbers");
+
+    auto PySimulator = py::class_<Simulator>(m, "Simulator");
+    auto PyScene = py::class_<MyScene, ScenePtr>(m, "Scene");
+    auto PyObject = py::class_<Object, ObjectPtr>(m, "Object");
+    auto PyParticleShape = py::class_<ParticleShape, ParticleShapePtr>(m, "Shape");
+
+    PySimulator.def(py::init<bool>(), py::arg("rendering")=false)
+    .def("reset", &Simulator::reset, py::arg("center")=true)
+    .def("get_scene", &Simulator::get_scene, py::return_value_policy::reference)
+    .def("set_scene", &Simulator::set_scene, py::arg("name")="empty")
+    .def("step", &Simulator::step);
+
+    PyScene.def(py::init<char*>(), py::arg("name"))
+    .def("add", &MyScene::add_objects, py::arg("object")=PyObject(0));
+
+    PyParticleShape.def(py::init<const char*, const char*, Vec3, Vec3, float, Vec4, Vec3, float>(), py::arg("name"), py::arg("path"), py::arg("lower")=Vec3(0, 0, 0)), py::arg("scale")=1., py::arg("rotation")=0., py::arg("color")=Vec4(0.0f), py::arg("invMass")=1.0f);
+
 
 #ifdef VERSION_INFO
     m.attr("__version__") = VERSION_INFO;
