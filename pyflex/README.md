@@ -1,3 +1,33 @@
+Note by Zhiao Huang:
+
+- interop must be set to false
+
+Objects:
+- Meshes:
+    - CreateParticleShape (see BunnyBath)
+    - Move and change the rotation
+    - Apply force
+- Fluid/Particles
+    - CreateParticleGrid
+- Emitter: Water Jet
+- Cloth
+    - CreateSpringGrid
+- Static:
+    - Box/Capsule/Sphere
+    - SDF (see viscosity)
+    - Triangular Mesh (GameMeseh)
+    - Convex ...
+
+
+Simulator Parameters:
+- Change by scene 
+
+
+Camera:
+- Haha
+
+---
+
 The python bindings included have been tested with the following machines:
 
 Machine 1:

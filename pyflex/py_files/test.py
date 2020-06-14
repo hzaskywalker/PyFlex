@@ -46,9 +46,14 @@ def test2():
     s = 0.1 * 0.5
     bunny = pyflex.Shape(
         "bunny",
-        "../../data/bunny.ply", [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], 0, [0, 0, 0, 0], 1., spacing=s
+        "../../data/bunny.ply", [0.2, 0.2, 0.4], [1., 1., 1.], 0, [0, 0, 0, 0], 0.1, spacing=s
     )
     scene.add(bunny)
+
+    fluid = pyflex.Fluid(
+        "fluid", [0.1, 2, 0.1], 10, 10, 10, 0.055, [1, 0.425, 0.55, 1.], 1.
+    )
+    scene.add(fluid)
     sim.reset(center=False)
     while True:
         q = sim.step()
