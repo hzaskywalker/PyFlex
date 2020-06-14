@@ -51,9 +51,26 @@ def test2():
     scene.add(bunny)
 
     fluid = pyflex.Fluid(
-        "fluid", [0.1, 2, 0.1], 10, 10, 10, 0.055, [1, 0.425, 0.55, 1.], 1.
+        "fluid", [0.1, 2, 0.1], 40, 10, 40, 0.055, [1, 0.425, 0.55, 1.], 1.
     )
+
+    radius = 0.1
+    restDistance = radius * 0.55
+    scene.radius = radius
+    scene.dynamicFriction = 0.01
+    scene.viscosity = 2.0
+    scene.numIterations = 4
+    scene.vorticityConfinement = 40.0
+    scene.fluidRestDistance = restDistance
+    scene.solidPressure = 0.
+    scene.relaxationFactor = 0.0
+    scene.cohesion = 0.02
+    scene.collisionDistance = 0.01
+    scene.numPlanes = 5
+
     scene.add(fluid)
+
+
     sim.reset(center=False)
     while True:
         q = sim.step()

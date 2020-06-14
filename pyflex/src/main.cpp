@@ -133,17 +133,19 @@ public:
     float _particleCollisionMargin = 0.0f;
     float _shapeCollisionMargin = 0.0f;
 
+    int _numPlanes = 1;
+    Eigen::MatrixXf _boundary;
+
 
     NvFlexRelaxationMode _relaxationMode = eNvFlexRelaxationLocal;
     float _relaxationFactor = 1.0f;
 
-    void Set()
+    void set_params()
     {
-
         g_params.numIterations = _numIterations;
 
         g_params.radius = _radius;
-        g_prams.solidRestDistance = _solidRestDistance;
+        g_params.solidRestDistance = _solidRestDistance;
         g_params.fluidRestDistance = _fluidRestDistance;
 
         //common
@@ -165,7 +167,7 @@ public:
 
         //fluid
         g_params.cohesion = _cohesion;
-        g_parmas.surfaceTension = _surfaceTension;
+        g_params.surfaceTension = _surfaceTension;
         g_params.viscosity = _viscosity;
         g_params.vorticityConfinement = _vorticityConfinement;
         g_params.anisotropyScale = _anisotropyScale;
@@ -178,7 +180,7 @@ public:
 
         //diffuse
         g_params.diffuseThreshold = _diffuseThreshold;
-        g_params.diffuseBuoyancy _diffuseBuoyancy;
+        g_params.diffuseBuoyancy = _diffuseBuoyancy;
         g_params.diffuseDrag = _diffuseDrag;
         g_params.diffuseBallistic = _diffuseBallistic;
         g_params.diffuseLifetime = _diffuseLifetime;
@@ -187,33 +189,22 @@ public:
         g_params.collisionDistance = _collisionDistance;
         g_params.particleCollisionMargin = _particleCollisionMargin;
         g_params.shapeCollisionMargin = _shapeCollisionMargin;
+        g_params.numPlanes = _numPlanes;
     }
 
     void Initialize()
     {
-        float radius = 0.1f;
         int group = 1;
         for (size_t i = 0; i < objects.size(); ++i)
         {
             objects[i]->Initialize(group);
             group++;
         }
+        set_params();
 
+        g_warmup = true;
         g_sceneLower = Vec3(0.0f);
         g_numSubsteps = 2;
-        float restDistance = radius * 0.55f;
-
-        g_params.radius = radius;
-        g_params.dynamicFriction = 0.01f;
-        g_params.viscosity = 2.0f;
-        g_params.numIterations = 4;
-        g_params.vorticityConfinement = 40.0f;
-        g_params.fluidRestDistance = restDistance;
-        g_params.solidPressure = 0.f;
-        g_params.relaxationFactor = 0.0f;
-        g_params.cohesion = 0.02f;
-        g_params.collisionDistance = 0.01f;
-        g_params.numPlanes = 5;
 
         g_maxDiffuseParticles = 64 * 1024;
         g_numExtraParticles = 48 * 1024;
@@ -234,8 +225,6 @@ public:
         g_waveFloorTilt = 0.0f;
         g_waveFrequency = 1.5f;
         g_waveAmplitude = 2.0f;
-
-        g_warmup = true;
 
         // draw options
         g_drawPoints = false;

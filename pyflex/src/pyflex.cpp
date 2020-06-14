@@ -59,7 +59,17 @@ PYBIND11_MODULE(pyflex, m)
         .def("step", &Simulator::step);
 
     PyScene.def(py::init<char *>(), py::arg("name"))
-        .def_property("radius", &Scene::_radius)
+        .def_readwrite("radius", &MyScene::_radius)
+        .def_readwrite("dynamicFriction", &MyScene::_dynamicFriction)
+        .def_readwrite("viscosity", &MyScene::_viscosity)
+        .def_readwrite("numIterations", &MyScene::_numIterations)
+        .def_readwrite("vorticityConfinement", &MyScene::_vorticityConfinement)
+        .def_readwrite("fluidRestDistance", &MyScene::_fluidRestDistance)
+        .def_readwrite("solidPressure", &MyScene::_solidPressure)
+        .def_readwrite("relaxationFactor", &MyScene::_relaxationFactor)
+        .def_readwrite("cohesion", &MyScene::_cohesion)
+        .def_readwrite("collisionDistance", &MyScene::_collisionDistance)
+        .def_readwrite("numPlanes", &MyScene::_numPlanes)
         .def("add", &MyScene::add_objects, py::arg("object") = ObjectPtr(0));
     
     PyObject.def_property_readonly("name", [](Object& shape){return shape.mName;});
