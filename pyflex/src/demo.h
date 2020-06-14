@@ -573,10 +573,15 @@ inline float sqr(float x) { return x*x; }
 SDL_Event e;
 
 
+// added by hza... used to control if we center the camera...
+// the example by default will center the camera
+bool g_centerCamera = false;
 
 
 void Init(int scene, bool centerCamera = true)
 {
+	g_centerCamera = centerCamera;
+
 	RandInit();
 
 	if (g_solver)
@@ -2152,7 +2157,7 @@ void UpdateFrame()
 	// if user requested a scene reset process it now
 	if (g_resetScene)
 	{
-		Reset();
+		Reset(true);
 		g_resetScene = false;
 	}
 

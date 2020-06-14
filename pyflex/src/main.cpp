@@ -134,11 +134,12 @@ public:
     float _shapeCollisionMargin = 0.0f;
 
     int _numPlanes = 1;
-    Eigen::MatrixXf _boundary;
-
 
     NvFlexRelaxationMode _relaxationMode = eNvFlexRelaxationLocal;
     float _relaxationFactor = 1.0f;
+
+    XVec3 camPos = {6.0f, 8.0f, 18.0f};
+    XVec3 camAngle = {0.0f, -DegToRad(20.0f), 0.0f};
 
     void set_params()
     {
@@ -201,6 +202,11 @@ public:
             group++;
         }
         set_params();
+
+        if(!g_centerCamera){
+            g_camPos = Vec3(camPos.data());
+            g_camAngle = Vec3(camAngle.data());
+        }
 
         g_warmup = true;
         g_sceneLower = Vec3(0.0f);

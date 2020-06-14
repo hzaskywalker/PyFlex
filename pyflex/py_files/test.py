@@ -68,6 +68,11 @@ def test2():
     scene.collisionDistance = 0.01
     scene.numPlanes = 5
 
+    scene.camPos = [1, 10, 2]
+    # the second is the rotation about x ...
+    # the first is the rotation about y ...
+    scene.camAngle = [0, -np.pi/2 * 0.8, 0]
+
     scene.add(fluid)
 
 

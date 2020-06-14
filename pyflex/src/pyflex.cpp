@@ -70,6 +70,8 @@ PYBIND11_MODULE(pyflex, m)
         .def_readwrite("cohesion", &MyScene::_cohesion)
         .def_readwrite("collisionDistance", &MyScene::_collisionDistance)
         .def_readwrite("numPlanes", &MyScene::_numPlanes)
+        .def_readwrite("camPos", &MyScene::camPos)
+        .def_readwrite("camAngle", &MyScene::camAngle)
         .def("add", &MyScene::add_objects, py::arg("object") = ObjectPtr(0));
     
     PyObject.def_property_readonly("name", [](Object& shape){return shape.mName;});
