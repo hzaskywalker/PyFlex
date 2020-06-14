@@ -251,9 +251,12 @@ struct SimBuffers
 };
 
 SimBuffers* g_buffers;
+bool g_is_map = false;
 
 void MapBuffers(SimBuffers* buffers)
 {
+	if(g_is_map) return;
+	g_is_map = true;
 	buffers->positions.map();
 	buffers->restPositions.map();
 	buffers->velocities.map();
@@ -306,6 +309,8 @@ void MapBuffers(SimBuffers* buffers)
 
 void UnmapBuffers(SimBuffers* buffers)
 {
+	if(!g_is_map) return;
+	g_is_map = false;
 	// particles
 	buffers->positions.unmap();
 	buffers->restPositions.unmap();

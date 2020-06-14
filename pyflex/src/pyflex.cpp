@@ -49,8 +49,9 @@ PYBIND11_MODULE(pyflex, m)
     auto PySimulator = py::class_<Simulator>(m, "Simulator");
     auto PyScene = py::class_<MyScene, ScenePtr>(m, "Scene");
     auto PyObject = py::class_<Object, ObjectPtr>(m, "Object");
-    auto PyParticleShape = py::class_<ParticleShape, ParticleShapePtr>(m, "Shape", PyObject);
-    auto PyFluidGrid = py::class_<FluidGrid, FluidGridPtr>(m, "Fluid", PyObject);
+    auto PyParticleObject = py::class_<ParticleObject>(m, "ParticleObject", PyObject);
+    auto PyParticleShape = py::class_<ParticleShape, ParticleShapePtr>(m, "Shape", PyParticleObject);
+    auto PyFluidGrid = py::class_<FluidGrid, FluidGridPtr>(m, "Fluid", PyParticleObject);
 
     PySimulator.def(py::init<bool>(), py::arg("rendering") = false)
         .def("reset", &Simulator::reset, py::arg("center") = true)
@@ -74,7 +75,9 @@ PYBIND11_MODULE(pyflex, m)
         .def_readwrite("camAngle", &MyScene::camAngle)
         .def("add", &MyScene::add_objects, py::arg("object") = ObjectPtr(0));
     
-    PyObject.def_property_readonly("name", [](Object& shape){return shape.mName;});
+    PyObject.def_property_readonly("name", [](Object& shape){return shape.mName;}).def_property(
+        "position", &Object::get_positions, &Object::set_positions
+    );
 
     PyParticleShape.def(py::init<string, string, XVec3, XVec3, float, XVec4, float, float>(), py::arg("name"), py::arg("path"), py::arg("lower") = XVec3({0, 0, 0}), py::arg("scale") = XVec3({1., 1., 1.}), py::arg("rotation") = 0., py::arg("color") = XVec4({0.0f, 0.0f, 0.0f, 0.0f}), py::arg("invMass") = 1.0f, py::arg("spacing")=0.05)
     .def_property_readonly("filename", [](ParticleShape& shape){return shape.filename;})

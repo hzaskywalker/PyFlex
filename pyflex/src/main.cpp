@@ -6,33 +6,73 @@ class Object;
 class Simulator;
 class ParticleShape;
 class FluidGrid;
+class ParticleObject;
 using ScenePtr = std::shared_ptr<MyScene>;
 using ObjectPtr = std::shared_ptr<Object>;
 using SimulatorPtr = std::shared_ptr<Simulator>;
 using ParticleShapePtr = std::shared_ptr<ParticleShape>;
 using FluidGridPtr = std::shared_ptr<FluidGrid>;
+using ParticleObjectPtr = std::shared_ptr<ParticleObject>;
 using XVec3 = Eigen::Vector3f;
 using XVec4 = Eigen::Vector4f;
 
 class Object
 {
 public:
-    Object(const string name, XVec4 color) : mName(name), color(color.data()) {}
+    Object(const string name, XVec4 color) : mName(name), color(color.data()){}
     virtual void Initialize(int group) = 0;
+    virtual void set_positions(const Eigen::MatrixXf& position)=0;
+    virtual Eigen::MatrixXf get_positions()=0;
     const string mName;
     Vec4 color;
 };
 
-class ParticleShape : public Object
+class ParticleObject : public Object
 {
 public:
-    ParticleShape(string _name, string _filename, XVec3 lower, XVec3 scale, float rotation, XVec4 color, float invMass, float spacing = 0.05f) : Object(_name, color), filename(_filename), lower(lower.data()), scale(scale.data()), rotation(rotation), spacing(spacing), velocity(Vec3(0.0f)), invMass(invMass), rigid(true), rigidStiffness(1.), skin(true), jitter(0.0f), skinOffset(0.0f), skinExpand(0.0f), springStiffness(0.0f)
+    ParticleObject(const string name, XVec4 color) : Object(name, color) {}
+
+    void set_positions(const Eigen::MatrixXf& position){
+        if(position.rows() != r-l){
+            throw std::runtime_error("size missmatch: input " + string() + " while the position of " + mName + " require " + std::to_string(r-l));
+        }
+        MapBuffers(g_buffers); // map the buffer if it's unmapped
+        for(int i=l;i<r;++i){
+            auto row = position.row(i);
+            g_buffers->positions[i].x = row(0);
+            g_buffers->positions[i].y = row(1);
+            g_buffers->positions[i].z = row(2);
+            g_buffers->positions[i].w = row(3);
+        }
+    }
+    Eigen::MatrixXf get_positions(){
+        MapBuffers(g_buffers); // map the buffer if it's unmapped
+        auto positions = Eigen::MatrixXf(r-l, 4);
+        for(int i=l;i<r;++i){
+            positions(i, 0) = g_buffers->positions[i].x;
+            positions(i, 1) = g_buffers->positions[i].y;
+            positions(i, 2) = g_buffers->positions[i].z;
+            positions(i, 3) = g_buffers->positions[i].w;
+        }
+        return positions;
+    }
+    int l;
+    int r;
+};
+
+
+class ParticleShape : public ParticleObject
+{
+public:
+    ParticleShape(string _name, string _filename, XVec3 lower, XVec3 scale, float rotation, XVec4 color, float invMass, float spacing = 0.05f) : ParticleObject(_name, color), filename(_filename), lower(lower.data()), scale(scale.data()), rotation(rotation), spacing(spacing), velocity(Vec3(0.0f)), invMass(invMass), rigid(true), rigidStiffness(1.), skin(true), jitter(0.0f), skinOffset(0.0f), skinExpand(0.0f), springStiffness(0.0f)
     {
     }
 
     void Initialize(int group)
     {
+        l = g_buffers->positions.size();
         CreateParticleShape(GetFilePathByPlatform(filename.c_str()).c_str(), lower, scale, rotation, spacing, velocity, invMass, rigid, rigidStiffness, NvFlexMakePhase(group, 0), skin, jitter, skinOffset, skinExpand, color, springStiffness);
+        r = g_buffers->positions.size();
     }
 
     const string filename;
@@ -52,16 +92,18 @@ public:
     float springStiffness;
 };
 
-class FluidGrid : public Object
+class FluidGrid : public ParticleObject
 {
 public:
-    FluidGrid(string _name, XVec3 lower, int dimx, int dimy, int dimz, float radius, XVec4 color, float invMass, float jitter = 0.005f) : Object(_name, color), lower(lower.data()), dimx(dimx), dimy(dimy), dimz(dimz), radius(radius), velocity(Vec3(0.0f)), invMass(invMass), rigid(false), rigidStiffness(0), jitter(jitter)
+    FluidGrid(string _name, XVec3 lower, int dimx, int dimy, int dimz, float radius, XVec4 color, float invMass, float jitter = 0.005f) : ParticleObject(_name, color), lower(lower.data()), dimx(dimx), dimy(dimy), dimz(dimz), radius(radius), velocity(Vec3(0.0f)), invMass(invMass), rigid(false), rigidStiffness(0), jitter(jitter)
     {
     }
 
     void Initialize(int group)
     {
+        l = g_buffers->positions.size();
         CreateParticleGrid(lower, dimx, dimy, dimz, radius, velocity, invMass, rigid, rigidStiffness, NvFlexMakePhase(0, eNvFlexPhaseSelfCollide | eNvFlexPhaseFluid), jitter);
+        r = g_buffers->positions.size();
 
         g_fluidColor = color;
     }
@@ -129,7 +171,7 @@ public:
     float _diffuseLifetime = 2.0f;
 
     //particles
-	float _collisionDistance = 0.0f;
+    float _collisionDistance = 0.0f;
     float _particleCollisionMargin = 0.0f;
     float _shapeCollisionMargin = 0.0f;
 
@@ -157,7 +199,7 @@ public:
         g_params.adhesion = _adhesion;
         g_params.sleepThreshold = _sleepThreshold;
         g_params.maxSpeed = _maxSpeed;
-        g_params.maxAcceleration =  _maxAcceleration;
+        g_params.maxAcceleration = _maxAcceleration;
         g_params.shockPropagation = _shockPropagation;
         g_params.dissipation = _dissipation;
         g_params.damping = _damping;
@@ -203,7 +245,8 @@ public:
         }
         set_params();
 
-        if(!g_centerCamera){
+        if (!g_centerCamera)
+        {
             g_camPos = Vec3(camPos.data());
             g_camAngle = Vec3(camAngle.data());
         }

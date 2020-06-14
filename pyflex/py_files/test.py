@@ -68,15 +68,23 @@ def test2():
     scene.collisionDistance = 0.01
     scene.numPlanes = 5
 
-    scene.camPos = [1, 10, 2]
+    scene.camPos = [1, 2, 10]
     # the second is the rotation about x ...
     # the first is the rotation about y ...
-    scene.camAngle = [0, -np.pi/2 * 0.8, 0]
+    #scene.camAngle = [0, -np.pi/2 * 0.8, 0]
+    scene.camAngle = [0, 0, 0]
 
     scene.add(fluid)
 
 
     sim.reset(center=False)
+    for i in range(60):
+        q = sim.step()
+
+
+    x = bunny.position
+    x[:, 1] += 10
+    bunny.position = x
     while True:
         q = sim.step()
 
