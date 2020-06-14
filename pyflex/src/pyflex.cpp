@@ -59,6 +59,7 @@ PYBIND11_MODULE(pyflex, m)
         .def("step", &Simulator::step);
 
     PyScene.def(py::init<char *>(), py::arg("name"))
+        .def_property("radius", &Scene::_radius)
         .def("add", &MyScene::add_objects, py::arg("object") = ObjectPtr(0));
     
     PyObject.def_property_readonly("name", [](Object& shape){return shape.mName;});

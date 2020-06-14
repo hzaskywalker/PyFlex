@@ -84,6 +84,111 @@ public:
     {
     }
 
+    int _numIterations = 3;
+    // gravity is ommitted, always points to -y axis.
+
+    float _radius = 0.15f;
+    float _solidRestDistance = 0.0f;
+    float _fluidRestDistance = 0.0f;
+
+    //common
+    float _dynamicFriction = 0.0f;
+    float _staticFriction = 0.0f;
+    float _particleFriction = 0.0f;
+    float _restitution = 0.0f;
+    float _adhesion = 0.0f;
+    float _sleepThreshold = 0.0f;
+    float _maxSpeed = FLT_MAX;
+    float _maxAcceleration = 100.0f;
+    float _shockPropagation = 0.0f;
+    float _dissipation = 0.0f;
+    float _damping = 0.0f;
+
+    //cloth
+    float _drag = 0.0f;
+    float _lift = 0.0f;
+
+    //fluid
+    float _cohesion = 0.025f;
+    float _surfaceTension = 0.0f;
+    float _viscosity = 0.0f;
+    float _vorticityConfinement = 0.0f;
+    float _anisotropyScale = 1.0f;
+    float _anisotropyMin = 0.1f;
+    float _anisotropyMax = 2.0f;
+    float _smoothing = 1.0f;
+    float _solidPressure = 1.0f;
+    float _freeSurfaceDrag = 0.0f;
+    float _buoyancy = 1.0f;
+
+    //diffuse
+    float _diffuseThreshold = 100.0f;
+    float _diffuseBuoyancy = 1.0f;
+    float _diffuseDrag = 0.8f;
+    float _diffuseBallistic = 16;
+    float _diffuseLifetime = 2.0f;
+
+    //particles
+	float _collisionDistance = 0.0f;
+    float _particleCollisionMargin = 0.0f;
+    float _shapeCollisionMargin = 0.0f;
+
+
+    NvFlexRelaxationMode _relaxationMode = eNvFlexRelaxationLocal;
+    float _relaxationFactor = 1.0f;
+
+    void Set()
+    {
+
+        g_params.numIterations = _numIterations;
+
+        g_params.radius = _radius;
+        g_prams.solidRestDistance = _solidRestDistance;
+        g_params.fluidRestDistance = _fluidRestDistance;
+
+        //common
+        g_params.dynamicFriction = _dynamicFriction;
+        g_params.staticFriction = _staticFriction;
+        g_params.particleFriction = _particleFriction;
+        g_params.restitution = _restitution;
+        g_params.adhesion = _adhesion;
+        g_params.sleepThreshold = _sleepThreshold;
+        g_params.maxSpeed = _maxSpeed;
+        g_params.maxAcceleration =  _maxAcceleration;
+        g_params.shockPropagation = _shockPropagation;
+        g_params.dissipation = _dissipation;
+        g_params.damping = _damping;
+
+        //cloth
+        g_params.drag = _drag;
+        g_params.lift = _lift;
+
+        //fluid
+        g_params.cohesion = _cohesion;
+        g_parmas.surfaceTension = _surfaceTension;
+        g_params.viscosity = _viscosity;
+        g_params.vorticityConfinement = _vorticityConfinement;
+        g_params.anisotropyScale = _anisotropyScale;
+        g_params.anisotropyMin = _anisotropyMin;
+        g_params.anisotropyMax = _anisotropyMax;
+        g_params.smoothing = _smoothing;
+        g_params.solidPressure = _solidPressure;
+        g_params.freeSurfaceDrag = _freeSurfaceDrag;
+        g_params.buoyancy = _buoyancy;
+
+        //diffuse
+        g_params.diffuseThreshold = _diffuseThreshold;
+        g_params.diffuseBuoyancy _diffuseBuoyancy;
+        g_params.diffuseDrag = _diffuseDrag;
+        g_params.diffuseBallistic = _diffuseBallistic;
+        g_params.diffuseLifetime = _diffuseLifetime;
+
+        //particles
+        g_params.collisionDistance = _collisionDistance;
+        g_params.particleCollisionMargin = _particleCollisionMargin;
+        g_params.shapeCollisionMargin = _shapeCollisionMargin;
+    }
+
     void Initialize()
     {
         float radius = 0.1f;
@@ -108,6 +213,7 @@ public:
         g_params.relaxationFactor = 0.0f;
         g_params.cohesion = 0.02f;
         g_params.collisionDistance = 0.01f;
+        g_params.numPlanes = 5;
 
         g_maxDiffuseParticles = 64 * 1024;
         g_numExtraParticles = 48 * 1024;
@@ -124,8 +230,6 @@ public:
         */
 
         g_lightDistance = 1.8f;
-
-        g_params.numPlanes = 5;
 
         g_waveFloorTilt = 0.0f;
         g_waveFrequency = 1.5f;
