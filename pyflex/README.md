@@ -18,10 +18,8 @@ Objects:
     - Triangular Mesh (GameMeseh)
     - Convex ...
 
-
 Simulator Parameters:
 - Change by scene 
-
 
 Camera:
 - Haha

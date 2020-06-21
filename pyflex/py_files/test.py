@@ -46,12 +46,26 @@ def test2():
     s = 0.1 * 0.5
     bunny = pyflex.Shape(
         "bunny",
-        "../../data/bunny.ply", [0.2, 0.2, 0.4], [1., 1., 1.], 0, [0, 0, 0, 0], 0.1, spacing=s
+        "../../data/box.ply", [0.2, 0.2, 0.4], [1., 1., 1.], 0, [0, 0, 0, 0], 0.5, spacing=s
+    )
+    sphere = pyflex.Shape(
+        "sphere",
+        "../../data/sphere.ply", [0.2, 0.8, 0.4], [1., 1., 1.], 0, [0, 0, 0, 0], 10, spacing=s
+    )
+    box = pyflex.Shape(
+        "sphere",
+        "../../data/bunny.ply", [0.2, 0.8, 0.4], [0.3, 0.3, 0.3], 0, [0, 0, 0, 0], 1, spacing=s
     )
     scene.add(bunny)
+    scene.add(sphere)
+    scene.add(box)
 
     fluid = pyflex.Fluid(
         "fluid", [0.1, 2, 0.1], 40, 10, 40, 0.055, [1, 0.425, 0.55, 1.], 1.
+    )
+
+    fluid2 = pyflex.Fluid(
+        "fluid2", [0.1, 4, 0.1], 40, 10, 40, 0.055, [1, 0.425, 0.55, 1.], 1.
     )
 
     radius = 0.1
@@ -75,6 +89,7 @@ def test2():
     scene.camAngle = [0, 0, 0]
 
     scene.add(fluid)
+    scene.add(fluid2)
 
 
     sim.reset(center=False)
@@ -83,6 +98,7 @@ def test2():
 
 
     x = bunny.position
+    print(x)
     x[:, 1] += 10
     bunny.position = x
     while True:
