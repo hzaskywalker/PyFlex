@@ -2814,6 +2814,7 @@ bool SDLMain()
 void initialize(bool rendering=false){
 	g_render = rendering;
 
+	/*
 	// soft body scenes
 	SoftBody::Instance octopus("../../data/softs/octopus.obj");
 	octopus.mScale = Vec3(32.0f);
@@ -3047,6 +3048,7 @@ void initialize(bool rendering=false){
 	g_scenes.push_back(new FluidClothCoupling("Fluid Cloth Coupling Water", false));
 	g_scenes.push_back(new FluidClothCoupling("Fluid Cloth Coupling Goo", true));
 	g_scenes.push_back(new BunnyBath("Bunny Bath Dam", true));
+	*/
 
 	// init graphics
 	RenderInitOptions options;
@@ -3221,12 +3223,14 @@ void initialize(bool rendering=false){
 
 
 	// init default scene
-	if(g_render)
-		StartGpuWork();
-	g_scene = g_scenes.size() - 1;
-	Init(g_scene);
-	if(g_render)
-		EndGpuWork();
+	if(g_scenes.size()>0){
+		if (g_render)
+			StartGpuWork();
+		g_scene = g_scenes.size() - 1;
+		Init(g_scene);
+		if (g_render)
+			EndGpuWork();
+	}
 
 
     cout << "C++ Finished Initializing!" << endl;

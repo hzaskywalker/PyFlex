@@ -46,15 +46,15 @@ def test2():
     s = 0.1 * 0.5
     bunny = pyflex.Shape(
         "bunny",
-        "../../data/box.ply", [0.2, 0.2, 0.4], [1., 1., 1.], 0, [0, 0, 0, 0], 0.5, spacing=s
+        "/home/hza/fluid/PyFlex/data/box.ply", [0.2, 0.2, 0.4], [1., 1., 1.], 0, [0, 0, 0, 0], 0.5, spacing=s
     )
     sphere = pyflex.Shape(
         "sphere",
-        "../../data/sphere.ply", [0.2, 0.8, 0.4], [1., 1., 1.], 0, [0, 0, 0, 0], 10, spacing=s
+        "/home/hza/fluid/PyFlex/data/sphere.ply", [0.2, 0.8, 0.4], [1., 1., 1.], 0, [0, 0, 0, 0], 10, spacing=s
     )
     box = pyflex.Shape(
         "sphere",
-        "../../data/bunny.ply", [0.2, 0.8, 0.4], [0.3, 0.3, 0.3], 0, [0, 0, 0, 0], 1, spacing=s
+        "/home/hza/fluid/PyFlex/data/bunny.ply", [0.2, 0.8, 0.4], [0.3, 0.3, 0.3], 0, [0, 0, 0, 0], 1, spacing=s
     )
     scene.add(bunny)
     scene.add(sphere)

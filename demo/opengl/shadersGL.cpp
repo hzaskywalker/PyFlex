@@ -275,7 +275,11 @@ void InitRender(const RenderInitOptions& options)
 		printf("Could not initialize GL extensions\n");
 	}
 
+	#ifdef FleX_ROOT
+	imguiRenderGLInit(GetFilePathByPlatform((std::string(FleX_ROOT)+"/data/DroidSans.ttf").c_str()).c_str());
+	#else
 	imguiRenderGLInit(GetFilePathByPlatform("../../data/DroidSans.ttf").c_str());
+	#endif
 
 	g_msaaSamples = msaaSamples;
 	g_window = window;
