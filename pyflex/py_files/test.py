@@ -1,5 +1,6 @@
 #Written by Henry M. Clever. November 15, 2018.
 from time import time
+import tqdm
 from random import random
 import numpy as np
 
@@ -93,17 +94,23 @@ def test2():
 
 
     sim.reset(center=False)
-    for i in range(60):
+    for i in tqdm.trange(60):
         q = sim.step()
+        img = sim.render()
+        print(img.shape, img.dtype)
+        import cv2
+        cv2.imshow('x', img)
+        cv2.waitKey(0)
 
 
     x = bunny.position
     print(x)
     x[:, 1] += 10
     bunny.position = x
-    while True:
+    for i in tqdm.trange(10000):
         q = sim.step()
 
 
 if __name__ == '__main__':
     test2()
+    #test1()

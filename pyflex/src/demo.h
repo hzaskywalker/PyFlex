@@ -125,7 +125,7 @@ int g_numSubsteps;
 // a setting of -1 means Flex will use the device specified in the NVIDIA control panel
 int g_device = -1;
 char g_deviceName[256];
-bool g_vsync = true;
+bool g_vsync = true; //change this option can change the framerate
 
 bool g_benchmark = false;
 bool g_extensions = true;

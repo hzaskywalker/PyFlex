@@ -57,6 +57,7 @@ PYBIND11_MODULE(pyflex, m)
         .def("reset", &Simulator::reset, py::arg("center") = true)
         .def("get_scene", &Simulator::get_scene, py::return_value_policy::reference)
         .def("set_scene", &Simulator::set_scene, py::arg("name") = "empty")
+        .def("render", &Simulator::render, py::return_value_policy::automatic)
         .def("step", &Simulator::step);
 
     PyScene.def(py::init<char *>(), py::arg("name"))

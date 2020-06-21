@@ -1,5 +1,7 @@
 #include "demo.h"
 #include <Eigen/Dense>
+#include <pybind11/numpy.h>
+namespace py=pybind11;
 
 class MyScene;
 class Object;
@@ -320,6 +322,15 @@ public:
         {
             return false;
         }
+    }
+
+    py::array_t<uint8_t> render(){
+        auto data = new uint32_t[g_screenWidth*g_screenHeight];
+		ReadFrame((int*)data, g_screenWidth, g_screenHeight);
+
+        auto ans = py::array_t<uint8_t>({g_screenHeight, g_screenWidth, 4}, (unsigned char*)data);
+		delete[] data;
+        return ans;
     }
 
     ScenePtr get_scene()
