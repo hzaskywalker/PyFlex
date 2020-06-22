@@ -141,17 +141,18 @@ def test3():
     ground = pyflex.KBox("ground", center=[0, 0, 0], scale=[2, 0.1, 2], color=[0.9, 0.9, 0.9, 1])
     scene.add(ground)
 
-    left_ground = pyflex.KBox("left", center = [-0.75, 0.3, 0], scale=[0.5, 0.4, 2], color=[0.9, 0, 0, 1])
+    left_ground = pyflex.KBox("left", center = [-0.75, 0.3, 0.5], scale=[0.5, 0.4, 1], color=[0.9, 0, 0, 1])
     scene.add(left_ground)
 
-    right_ground = pyflex.KBox("left", center = [0.75, 0.3, 0], scale=[0.5, 0.4, 2], color=[0.9, 0, 0, 1])
+    right_ground = pyflex.KBox("left", center = [0.75, 0.3, 0.5], scale=[0.5, 0.4, 1], color=[0.9, 0, 0, 1])
     scene.add(right_ground)
 
-    door = pyflex.KBox("left", center = [0, 0, 0], scale=[2, 2, 0.1], color=[0.0, 0.8, 0.7, 1])
-    #scene.add(door)
+    door = pyflex.KBox("door", center = [0, 0, 0], scale=[2, 3, 0.1], color=[0.0, 0.8, 0.7, 1])
+    scene.add(door)
 
+    rr = 0.06
     fluid = pyflex.Fluid(
-        "fluid", [-0.5, -0.1, -1], 20, 30, 10, 0.055, [1, 0.425, 0.55, 1.], 1.
+        "fluid", [-0.99, 0.1, -0.99], int(2/rr), int(1.8/rr), int(0.9/rr), 0.055, [1, 0.425, 0.55, 1.], 1.
     )
     scene.add(fluid)
 
