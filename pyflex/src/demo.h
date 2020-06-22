@@ -116,6 +116,13 @@ SDL_GameController* g_gamecontroller = NULL;
 
 using namespace std;
 
+
+#include "main.h"
+class Agent;
+
+Agent* g_agent=nullptr;
+
+
 int g_screenWidth = 1280;
 int g_screenHeight = 720;
 int g_msaaSamples = 8;
@@ -2102,6 +2109,8 @@ void UpdateFrame()
 			UpdateMouse();
 		UpdateWind();
 		UpdateScene();
+		if(g_agent!=nullptr)
+			g_agent->update();
 	}
 
 	//-------------------------------------------------------------------
@@ -2371,21 +2380,29 @@ bool InputKeyboardDown(unsigned char key, int x, int y)
 	{
 	case 'w':
 	{
+		if(g_agent!=nullptr)
+			g_agent->w = true;
 		g_camVel.z = kSpeed;
 		break;
 	}
 	case 's':
 	{
+		if(g_agent!=nullptr)
+			g_agent->s = true;
 		g_camVel.z = -kSpeed;
 		break;
 	}
 	case 'a':
 	{
+		if(g_agent!=nullptr)
+			g_agent->a = true;
 		g_camVel.x = -kSpeed;
 		break;
 	}
 	case 'd':
 	{
+		if(g_agent!=nullptr)
+			g_agent->d = true;
 		g_camVel.x = kSpeed;
 		break;
 	}

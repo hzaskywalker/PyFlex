@@ -57,11 +57,14 @@ PYBIND11_MODULE(pyflex, m)
     auto PyKinematicObject = py::class_<KinematicObject>(m, "KObject", PyObject);
     auto PyKinematicBox = py::class_<KinematicBox, KinematicBoxPtr>(m, "KBox", PyKinematicObject);
 
+    auto PyAgent = py::class_<Agent, AgentPtr>(m, "Agent");
+
     PySimulator.def(py::init<bool>(), py::arg("rendering") = false)
         .def("reset", &Simulator::reset, py::arg("center") = true)
         .def("get_scene", &Simulator::get_scene, py::return_value_policy::reference)
         .def("set_scene", &Simulator::set_scene, py::arg("name") = "empty")
         .def("render", &Simulator::render, py::return_value_policy::automatic)
+        .def("get_agent", &Simulator::get_agent, py::return_value_policy::reference)
         .def("step", &Simulator::step);
 
     PyScene.def(py::init<char *>(), py::arg("name"))
@@ -93,6 +96,10 @@ PYBIND11_MODULE(pyflex, m)
 
     /* ...................Kinematic Objects...................*/
     PyKinematicBox.def(py::init<string, XVec3, XVec3, XVec4, XVec4>(), py::arg("name"), py::arg("center")=XVec3({0, 0, 0}), py::arg("scale")=XVec3(0.1, 0.1, 0.1), py::arg("rotation")=XVec4({0, 0, 0, 1.}), py::arg("color")=XVec4({0.9, 0.9, 0.9, 1.}));
+
+
+    PyAgent.def("add", &Agent::add_object, py::arg("object") = ObjectPtr(0))
+    .def_readwrite("speed", &Agent::speed);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = VERSION_INFO;

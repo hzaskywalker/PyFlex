@@ -114,6 +114,53 @@ def test2():
         q = sim.step()
 
 
+def test3():
+    import pyflex
+    sim = pyflex.Simulator(rendering=True)
+    scene = sim.get_scene()
+
+    radius = 0.1
+    restDistance = radius * 0.55
+    scene.radius = radius
+    scene.dynamicFriction = 0.01
+    scene.viscosity = 2.0
+    scene.numIterations = 4
+    scene.vorticityConfinement = 40.0
+    scene.fluidRestDistance = restDistance
+    scene.solidPressure = 0.
+    scene.relaxationFactor = 0.0
+    scene.cohesion = 0.02
+    scene.collisionDistance = 0.01
+    scene.numPlanes = 5
+
+    scene.camPos = [0, 3, 3]
+    # the second is the rotation about x ...
+    # the first is the rotation about y ...
+    scene.camAngle = [0, -np.pi/4, 0]
+
+    ground = pyflex.KBox("ground", center=[0, 0, 0], scale=[2, 0.1, 2], color=[0.9, 0.9, 0.9, 1])
+    scene.add(ground)
+
+    """
+    bunny = pyflex.Shape(
+        "buny",
+        "/home/hza/fluid/PyFlex/data/bunny.ply", [0.2, 0.8, 0.4], [0.3, 0.3, 0.3], 0, [0, 0, 0, 0], 1, spacing=spacing
+    )
+    scene.add(bunny)
+    """
+    spacing = 0.05
+    sphere = pyflex.Shape("sphere", "/home/hza/fluid/PyFlex/data/sphere.ply", [0.2, 0.8, 0.4], [0.3, 0.3, 0.3], 0, [0, 0, 0, 0], 1, spacing=spacing)
+    scene.add(sphere)
+
+    sim.reset(center=False)
+    agent = sim.get_agent()
+    agent.add(sphere)
+    #exit(0)
+
+    while True:
+        sim.step()
+
 if __name__ == '__main__':
-    test2()
+    #test2()
     #test1()
+    test3()

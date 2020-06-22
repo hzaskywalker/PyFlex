@@ -1,26 +1,5 @@
 #include "demo.h"
-#include <Eigen/Dense>
-#include <pybind11/numpy.h>
-namespace py=pybind11;
-
-class MyScene;
-class Object;
-class Simulator;
-class ParticleShape;
-class FluidGrid;
-class ParticleObject;
-class KinematicObject;
-class KinematicBox;
-using ScenePtr = std::shared_ptr<MyScene>;
-using ObjectPtr = std::shared_ptr<Object>;
-using SimulatorPtr = std::shared_ptr<Simulator>;
-using ParticleShapePtr = std::shared_ptr<ParticleShape>;
-using FluidGridPtr = std::shared_ptr<FluidGrid>;
-using ParticleObjectPtr = std::shared_ptr<ParticleObject>;
-using KinematicObjectPtr = std::shared_ptr<KinematicObject>;
-using KinematicBoxPtr = std::shared_ptr<KinematicBox>;
-using XVec3 = Eigen::Vector3f;
-using XVec4 = Eigen::Vector4f;
+#include "main.h"
 
 class Object
 {
@@ -404,6 +383,7 @@ class Simulator
 public:
     ScenePtr myscene;
     int scene_id;
+    AgentPtr agent;
     Simulator(bool rendering)
     {
         num_sim += 1;
@@ -415,6 +395,9 @@ public:
         myscene = ScenePtr(new MyScene("empty"));
         g_scenes.push_back(myscene.get());
         scene_id = g_scenes.size() - 1;
+
+        g_agent = new Agent();
+        agent = AgentPtr(g_agent);
     }
 
     bool step()
@@ -461,10 +444,49 @@ public:
         // reset the scene ...
         g_scene = scene_id;
         Reset(centerCamera);
+        agent->reset();
     }
 
     ~Simulator()
     {
         destroy_scene();
     }
+
+    AgentPtr get_agent(){
+        return agent;
+    }
 };
+
+void Agent::update()
+{
+    //clear
+    mTime += g_dt;
+    if(w||a||s||d){
+        float cc = speed * g_dt;
+        for (size_t i = 0; i < objects.size(); ++i)
+        {
+            Eigen::MatrixXf vel = objects[i]->get_velocities();
+            auto x = Eigen::VectorXf::Ones(vel.rows());
+            if (w)
+                vel.col(2) -= cc * x;
+            if (s)
+                vel.col(2) += cc * x;
+            if (a)
+                vel.col(0) -= cc * x;
+            if (d)
+                vel.col(0) += cc * x;
+            objects[i]->set_velocities(vel);
+        }
+        w = a = s = d = false;
+    }
+}
+
+void Agent::add_object(ObjectPtr obj)
+{
+    objects.push_back(obj);
+}
+
+void Agent::reset()
+{
+    mTime = 0;
+}
