@@ -174,6 +174,7 @@ def test3():
 
     while True:
         sim.step()
+        input()
 
 if __name__ == '__main__':
     #test2()
