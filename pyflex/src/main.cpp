@@ -188,11 +188,6 @@ public:
             g_buffers->rigidRotations[rigid_index].y = ans.y;
             g_buffers->rigidRotations[rigid_index].z = ans.z;
             g_buffers->rigidRotations[rigid_index].w = ans.w;
-
-	auto xx = g_buffers->rigidRotations[0];
-	cout<<"xxx"<<" "<<rigid_index<<endl;
-	cout<<xx.x<<" "<<xx.y<<" "<<xx.z<<" "<<xx.w<<endl;
-	cout<<"should be Quat "<<ans.x<<" "<<ans.y<<" "<<ans.z<<" "<<ans.w<<endl;
         }
     }
 
@@ -312,6 +307,7 @@ public:
     float _shapeCollisionMargin = 0.0f;
 
     int _numPlanes = 1;
+    int _numSubsteps = 2;
 
     NvFlexRelaxationMode _relaxationMode = eNvFlexRelaxationLocal;
     float _relaxationFactor = 1.0f;
@@ -322,6 +318,7 @@ public:
     bool _drawMesh=true;
     bool _drawPoints=false;
     bool _drawFluids=true;
+    bool _wireframe = false;
 
     void set_params()
     {
@@ -394,10 +391,11 @@ public:
         g_drawMesh = _drawMesh;
         g_drawPoints = _drawPoints;
         g_drawEllipsoids = _drawFluids;
+        g_wireframe = _wireframe;
 
         g_warmup = true;
         g_sceneLower = Vec3(0.0f);
-        g_numSubsteps = 2;
+        g_numSubsteps = _numSubsteps;
 
         g_maxDiffuseParticles = 64 * 1024;
         g_numExtraParticles = 48 * 1024;

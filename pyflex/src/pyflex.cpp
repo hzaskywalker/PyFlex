@@ -84,6 +84,8 @@ PYBIND11_MODULE(pyflex, m)
         .def_readwrite("drawMesh", &MyScene::_drawMesh)
         .def_readwrite("drawPoints", &MyScene::_drawPoints)
         .def_readwrite("drawFluids", &MyScene::_drawFluids)
+        .def_readwrite("wireframe", &MyScene::_wireframe)
+        .def_readwrite("numSubsteps", &MyScene::_numSubsteps)
         .def("add", &MyScene::add_objects, py::arg("object") = ObjectPtr(0));
 
     /* --------------------- Particle Objects .......................*/

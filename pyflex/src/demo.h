@@ -2148,11 +2148,6 @@ void UpdateFrame()
 	if (!g_useAsyncCompute)
 		NvFlexComputeWaitForGraphics(g_flexLib);
 
-	cout<<"222"<<endl;
-	cout<<g_buffers->rigidRotations.size()<<" "<<g_buffers->rigidOffsets.size()<<" "<<endl;
-	auto xx = g_buffers->rigidRotations[0];
-	cout<<"xx"<<endl;
-	cout<<xx.x<<" "<<xx.y<<" "<<xx.z<<" "<<xx.w<<endl;
 	UnmapBuffers(g_buffers);
 
 	// move mouse particle (must be done here as GetViewRay() uses the GL projection state)
@@ -2282,10 +2277,6 @@ void UpdateFrame()
 	if(g_render){
 		PresentFrame(g_vsync);
 	}
-
-	MapBuffers(g_buffers);
-	auto xx2 = g_buffers->rigidRotations[0];
-	cout<<xx2.x<<" "<<xx2.y<<" "<<xx2.z<<" "<<xx2.w<<endl;
 
 	// if gui or benchmark requested a scene change process it now
 	if (newScene != -1)

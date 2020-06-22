@@ -1,4 +1,5 @@
 #Written by Henry M. Clever. November 15, 2018.
+import cv2
 from time import time
 import tqdm
 from random import random
@@ -184,6 +185,7 @@ def test3():
                 trigger = 1
 
 def test4():
+    # show the bugs of flex
     import pyflex
     sim = pyflex.Simulator(rendering=True)
     scene = sim.get_scene()
@@ -252,8 +254,58 @@ def test4():
         cv2.waitKey(0)
         #input()
 
+def test5():
+    import pyflex
+    sim = pyflex.Simulator(rendering=True)
+    scene = sim.get_scene()
+
+    radius = 0.1
+    restDistance = radius * 0.55
+    scene.radius = radius
+    scene.dynamicFriction = 0.01
+    scene.viscosity = 2.0
+    scene.numIterations = 4
+    scene.vorticityConfinement = 40.0
+    scene.fluidRestDistance = restDistance
+    scene.solidPressure = 0.
+    scene.relaxationFactor = 0.0
+    scene.cohesion = 0.02
+    scene.collisionDistance = 0.01
+    scene.numPlanes = 5
+
+    scene.camPos = [0, 3, 2]
+    scene.camAngle = [0, -np.pi/4, 0]
+    #scene.camPos = [0, -3, 0]
+    #scene.camAngle = [0, np.pi/2, 0]
+
+    ground = pyflex.KBox("ground", center=[0, 0, 0], scale=[2, 0.1, 2], color=[0.9, 0.9, 0.9, 1])
+    scene.add(ground)
+
+    spacing = 0.025
+    cup = pyflex.Shape("sphere", "/home/hza/fluid/PyFlex/data/cup.ply", [0, 0, 0.], [1, 1, 1], 0, [0, 0, 0, 0], 0.4, spacing=spacing)
+    scene.add(cup)
+
+    fluid = pyflex.Fluid("water", [0.2, .3, 0.2], 6, 25, 6, 0.06, invMass=1., jitter=0)
+    scene.add(fluid)
+
+    agent = sim.get_agent()
+    agent.add(cup)
+
+    scene.drawMesh=False
+    scene.drawPoints=True
+    scene.drawFluids = False
+    scene.wireframe = True
+    scene.numSubsteps = 4
+    scene.numIterations = 6
+
+    sim.reset(center=False)
+
+    while True:
+        sim.step()
+
 if __name__ == '__main__':
     #test2()
     #test1()
     #test3()
-    test4()
+    #test4()
+    test5()
