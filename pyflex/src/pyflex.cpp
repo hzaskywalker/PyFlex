@@ -95,6 +95,9 @@ PYBIND11_MODULE(pyflex, m)
 
 
     /* ...................Kinematic Objects...................*/
+
+    PyKinematicObject.def_readwrite("moveTime", &KinematicObject::moveTime).def_readwrite("velocity", &KinematicObject::velocity);
+
     PyKinematicBox.def(py::init<string, XVec3, XVec3, XVec4, XVec4>(), py::arg("name"), py::arg("center")=XVec3({0, 0, 0}), py::arg("scale")=XVec3(0.1, 0.1, 0.1), py::arg("rotation")=XVec4({0, 0, 0, 1.}), py::arg("color")=XVec4({0.9, 0.9, 0.9, 1.}));
 
 

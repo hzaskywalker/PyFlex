@@ -147,7 +147,7 @@ def test3():
     right_ground = pyflex.KBox("left", center = [0.75, 0.3, 0.5], scale=[0.5, 0.4, 1], color=[0.9, 0, 0, 1])
     scene.add(right_ground)
 
-    door = pyflex.KBox("door", center = [0, 0, 0], scale=[2, 3, 0.1], color=[0.0, 0.8, 0.7, 1])
+    door = pyflex.KBox("door", center = [0, 0.75, 0], scale=[2, 1.5, 0.1], color=[0.0, 0.8, 0.7, 1])
     scene.add(door)
 
     rr = 0.06
@@ -176,8 +176,14 @@ def test3():
     agent.add(sphere)
     #exit(0)
 
+    trigger = 0
     while True:
         sim.step()
+        if not trigger:
+            if sphere.position.mean(axis=0)[2] < 0.2:
+                door.moveTime = 2
+                door.velocity = [0, 1, 0]
+                trigger = 1
 
 if __name__ == '__main__':
     #test2()

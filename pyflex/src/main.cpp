@@ -10,6 +10,7 @@ public:
     virtual Eigen::MatrixXf get_positions()=0;
     virtual void set_velocities(const Eigen::MatrixXf& position)=0;
     virtual Eigen::MatrixXf get_velocities()=0;
+    virtual void update(){} //self update
     const string mName;
     Vec4 color;
 };
@@ -20,7 +21,22 @@ class KinematicObject: public Object
 public:
     int shape_id;
 
-    KinematicObject(const string name, XVec4 color) : Object(name, color) {}
+    XVec3 velocity;
+    float moveTime;
+
+    KinematicObject(const string name, XVec4 color) : Object(name, color), moveTime(0), velocity({0., 0., 0.}) {}
+
+    void update(){
+        if(moveTime>0){
+            auto pos = get_positions();
+            pos(0) += velocity(0) * g_dt;
+            pos(1) += velocity(1) * g_dt;
+            pos(2) += velocity(2) * g_dt;
+            set_positions(pos);
+            moveTime -= g_dt;
+            UpdateShapes();
+        }
+    }
 
     void set_positions(const Eigen::MatrixXf& position){
         MapBuffers(g_buffers); // map the buffer if it's unmapped
@@ -371,6 +387,11 @@ public:
     void add_objects(ObjectPtr obj)
     {
         objects.push_back(obj);
+    }
+
+    void Update(){
+        for (size_t i = 0; i < objects.size(); ++i)
+            objects[i]->update();
     }
 
     vector<ObjectPtr> objects;
