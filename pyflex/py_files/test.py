@@ -133,7 +133,7 @@ def test3():
     scene.collisionDistance = 0.01
     scene.numPlanes = 5
 
-    scene.camPos = [0, 3, 3]
+    scene.camPos = [0, 3, 2]
     # the second is the rotation about x ...
     # the first is the rotation about y ...
     scene.camAngle = [0, -np.pi/4, 0]
@@ -147,8 +147,11 @@ def test3():
     right_ground = pyflex.KBox("left", center = [0.75, 0.3, 0], scale=[0.5, 0.4, 2], color=[0.9, 0, 0, 1])
     scene.add(right_ground)
 
+    door = pyflex.KBox("left", center = [0, 0, 0], scale=[2, 2, 0.1], color=[0.0, 0.8, 0.7, 1])
+    #scene.add(door)
+
     fluid = pyflex.Fluid(
-        "fluid", [0, 2, -0.3], 20, 20, 20, 0.055, [1, 0.425, 0.55, 1.], 1.
+        "fluid", [-0.5, -0.1, -1], 20, 30, 10, 0.055, [1, 0.425, 0.55, 1.], 1.
     )
     scene.add(fluid)
 
@@ -174,7 +177,6 @@ def test3():
 
     while True:
         sim.step()
-        input()
 
 if __name__ == '__main__':
     #test2()
