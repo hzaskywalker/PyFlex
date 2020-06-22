@@ -98,8 +98,8 @@ public:
             throw std::runtime_error("size missmatch: input " + string() + " while the position of " + mName + " require " + std::to_string(r-l));
         }
         MapBuffers(g_buffers); // map the buffer if it's unmapped
-        for(int i=l;i<r;++i){
-            auto row = position.row(i);
+        for(int i=l,j=0;i<r;++i,++j){
+            auto row = position.row(j);
             g_buffers->positions[i].x = row(0);
             g_buffers->positions[i].y = row(1);
             g_buffers->positions[i].z = row(2);
@@ -110,11 +110,11 @@ public:
     Eigen::MatrixXf get_positions(){
         MapBuffers(g_buffers); // map the buffer if it's unmapped
         auto positions = Eigen::MatrixXf(r-l, 4);
-        for(int i=l;i<r;++i){
-            positions(i, 0) = g_buffers->positions[i].x;
-            positions(i, 1) = g_buffers->positions[i].y;
-            positions(i, 2) = g_buffers->positions[i].z;
-            positions(i, 3) = g_buffers->positions[i].w;
+        for(int i=l, j=0;i<r;++i,++j){
+            positions(j, 0) = g_buffers->positions[i].x;
+            positions(j, 1) = g_buffers->positions[i].y;
+            positions(j, 2) = g_buffers->positions[i].z;
+            positions(j, 3) = g_buffers->positions[i].w;
         }
         return positions;
     }
@@ -124,8 +124,8 @@ public:
             throw std::runtime_error("size missmatch: input " + string() + " while the velocities of " + mName + " require " + std::to_string(r-l));
         }
         MapBuffers(g_buffers); // map the buffer if it's unmapped
-        for(int i=l;i<r;++i){
-            auto row = velocity.row(i);
+        for(int i=l,j=0;i<r;++i,++j){
+            auto row = velocity.row(j);
             g_buffers->velocities[i].x = row(0);
             g_buffers->velocities[i].y = row(1);
             g_buffers->velocities[i].z = row(2);
@@ -134,11 +134,11 @@ public:
 
     Eigen::MatrixXf get_velocities(){
         MapBuffers(g_buffers); // map the buffer if it's unmapped
-        auto velocity = Eigen::MatrixXf(r-l, 4);
-        for(int i=l;i<r;++i){
-            velocity(i, 0) = g_buffers->velocities[i].x;
-            velocity(i, 1) = g_buffers->velocities[i].y;
-            velocity(i, 2) = g_buffers->velocities[i].z;
+        auto velocity = Eigen::MatrixXf(r-l, 3);
+        for(int i=l, j=0;i<r;++i,++j){
+            velocity(j, 0) = g_buffers->velocities[i].x;
+            velocity(j, 1) = g_buffers->velocities[i].y;
+            velocity(j, 2) = g_buffers->velocities[i].z;
         }
         return velocity;
     }

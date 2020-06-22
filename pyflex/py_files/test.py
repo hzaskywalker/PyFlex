@@ -141,6 +141,17 @@ def test3():
     ground = pyflex.KBox("ground", center=[0, 0, 0], scale=[2, 0.1, 2], color=[0.9, 0.9, 0.9, 1])
     scene.add(ground)
 
+    left_ground = pyflex.KBox("left", center = [-0.75, 0.3, 0], scale=[0.5, 0.4, 2], color=[0.9, 0, 0, 1])
+    scene.add(left_ground)
+
+    right_ground = pyflex.KBox("left", center = [0.75, 0.3, 0], scale=[0.5, 0.4, 2], color=[0.9, 0, 0, 1])
+    scene.add(right_ground)
+
+    fluid = pyflex.Fluid(
+        "fluid", [0, 2, -0.3], 20, 20, 20, 0.055, [1, 0.425, 0.55, 1.], 1.
+    )
+    scene.add(fluid)
+
     """
     bunny = pyflex.Shape(
         "buny",
@@ -152,8 +163,12 @@ def test3():
     sphere = pyflex.Shape("sphere", "/home/hza/fluid/PyFlex/data/sphere.ply", [0.2, 0.8, 0.4], [0.3, 0.3, 0.3], 0, [0, 0, 0, 0], 1, spacing=spacing)
     scene.add(sphere)
 
+    sphere2 = pyflex.Shape("sphere2", "/home/hza/fluid/PyFlex/data/sphere.ply", [0.2, 0.8, -0.4], [0.3, 0.3, 0.3], 0, [0, 0, 0, 0], 1, spacing=spacing)
+    #scene.add(sphere2)
+
     sim.reset(center=False)
     agent = sim.get_agent()
+    agent.speed = 10
     agent.add(sphere)
     #exit(0)
 
