@@ -444,7 +444,6 @@ Vec3 g_lightTarget;
 
 bool g_pause = false;
 bool g_step = false;
-bool g_capture = false;
 bool g_showHelp = true;
 bool g_tweakPanel = true;
 bool g_fullscreen = false;
@@ -561,6 +560,7 @@ struct Emitter
 };
 
 vector<Emitter> g_emitters(1);	// first emitter is the camera 'gun'
+vector<Vec3> g_shapeColors;
 
 struct Rope
 {
@@ -672,6 +672,7 @@ void Init(int scene, bool centerCamera = true)
 	g_buffers->shapePrevPositions.resize(0);
 	g_buffers->shapePrevRotations.resize(0);
 	g_buffers->shapeFlags.resize(0);
+	g_shapeColors.resize(0);
 
 	g_ropes.resize(0);
 
@@ -1646,10 +1647,16 @@ void DrawShapes()
 			SetFillMode(true);		
 		}
 
+		if(i<g_shapeColors.size()){
+			color = g_shapeColors[i];
+		}
+
 		// render with prev positions to match particle update order
 		// can also think of this as current/next
 		const Quat rotation = g_buffers->shapePrevRotations[i];
 		const Vec3 position = Vec3(g_buffers->shapePrevPositions[i]);
+		//cout<<"Draw Shape"<<" "<<color[0]<<" "<<color[1]<<" "<<color[2]<<endl;
+		//cout<<"Draw Shape"<<" "<<position[0]<<" "<<position[1]<<" "<<position[2]<<endl;
 
 		NvFlexCollisionGeometry geo = g_buffers->shapeGeometry[i];
 
@@ -2141,20 +2148,6 @@ void UpdateFrame()
 		GetViewRay(g_lastx, g_screenHeight - g_lasty, origin, dir);
 
 		g_mousePos = origin + dir*g_mouseT;
-	}
-
-	if (g_render && g_capture)
-	{
-		TgaImage img;
-		img.m_width = g_screenWidth;
-		img.m_height = g_screenHeight;
-		img.m_data = new uint32_t[g_screenWidth*g_screenHeight];
-
-		ReadFrame((int*)img.m_data, g_screenWidth, g_screenHeight);
-
-		fwrite(img.m_data, sizeof(uint32_t)*g_screenWidth*g_screenHeight, 1, g_ffmpeg);
-
-		delete[] img.m_data;
 	}
 
 	double renderEndTime = GetSeconds();

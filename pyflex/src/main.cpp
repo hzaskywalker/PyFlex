@@ -9,12 +9,16 @@ class Simulator;
 class ParticleShape;
 class FluidGrid;
 class ParticleObject;
+class KinematicObject;
+class KinematicBox;
 using ScenePtr = std::shared_ptr<MyScene>;
 using ObjectPtr = std::shared_ptr<Object>;
 using SimulatorPtr = std::shared_ptr<Simulator>;
 using ParticleShapePtr = std::shared_ptr<ParticleShape>;
 using FluidGridPtr = std::shared_ptr<FluidGrid>;
 using ParticleObjectPtr = std::shared_ptr<ParticleObject>;
+using KinematicObjectPtr = std::shared_ptr<KinematicObject>;
+using KinematicBoxPtr = std::shared_ptr<KinematicBox>;
 using XVec3 = Eigen::Vector3f;
 using XVec4 = Eigen::Vector4f;
 
@@ -25,9 +29,85 @@ public:
     virtual void Initialize(int group) = 0;
     virtual void set_positions(const Eigen::MatrixXf& position)=0;
     virtual Eigen::MatrixXf get_positions()=0;
+    virtual void set_velocities(const Eigen::MatrixXf& position)=0;
+    virtual Eigen::MatrixXf get_velocities()=0;
     const string mName;
     Vec4 color;
 };
+
+
+class KinematicObject: public Object
+{
+public:
+    int shape_id;
+
+    KinematicObject(const string name, XVec4 color) : Object(name, color) {}
+
+    void set_positions(const Eigen::MatrixXf& position){
+        MapBuffers(g_buffers); // map the buffer if it's unmapped
+
+        if(position.rows() == 14){
+            //only render the prev positions ...
+            g_buffers->shapePrevPositions[shape_id].x = position(7);
+            g_buffers->shapePrevPositions[shape_id].y = position(8);
+            g_buffers->shapePrevPositions[shape_id].z = position(9);
+            g_buffers->shapePrevRotations[shape_id].x = position(10);
+            g_buffers->shapePrevRotations[shape_id].y = position(11);
+            g_buffers->shapePrevRotations[shape_id].z = position(12);
+            g_buffers->shapePrevRotations[shape_id].w = position(13);
+        } else {
+            g_buffers->shapePrevPositions[shape_id] = g_buffers->shapePositions[shape_id];
+            g_buffers->shapePrevRotations[shape_id] = g_buffers->shapeRotations[shape_id];
+        }
+        g_buffers->shapePositions[shape_id].x = position(0);
+        g_buffers->shapePositions[shape_id].y = position(1);
+        g_buffers->shapePositions[shape_id].z = position(2);
+        g_buffers->shapeRotations[shape_id].x = position(3);
+        g_buffers->shapeRotations[shape_id].y = position(4);
+        g_buffers->shapeRotations[shape_id].z = position(5);
+        g_buffers->shapeRotations[shape_id].w = position(6);
+    }
+
+    Eigen::MatrixXf get_positions(){
+        MapBuffers(g_buffers); // map the buffer if it's unmapped
+        auto ans = Eigen::VectorXf(7);
+
+        ans(0) = g_buffers->shapePositions[shape_id].x;
+        ans(1) = g_buffers->shapePositions[shape_id].y;
+        ans(2) = g_buffers->shapePositions[shape_id].z;
+        ans(3) = g_buffers->shapeRotations[shape_id].x;
+        ans(4) = g_buffers->shapeRotations[shape_id].y;
+        ans(5) = g_buffers->shapeRotations[shape_id].z;
+        ans(6) = g_buffers->shapeRotations[shape_id].w;
+        return ans;
+    }
+
+    void set_velocities(const Eigen::MatrixXf& velocity){
+        throw std::runtime_error("You can't set velocity for kinematics objects");
+    }
+
+    Eigen::MatrixXf get_velocities(){
+        throw std::runtime_error("You can't get velocity for kinematics objects");
+    }
+};
+
+
+class KinematicBox: public KinematicObject
+{
+public:
+    KinematicBox(string _name, XVec3 center, XVec3 scale, XVec4 rotation, XVec4 color):KinematicObject(_name, color), center(center.data()), halfEdge(scale(0)/2, scale(1)/2, scale(2)/2), rotation(rotation.data()){}
+
+    void Initialize(int group){
+        cout<<"Initialize box..."<<endl;
+        g_shapeColors.push_back(Vec3(color[0], color[1], color[2]));
+        shape_id = g_buffers->shapePositions.size();
+        AddBox(halfEdge, center, rotation);
+    }
+    Vec3 halfEdge;
+    Vec3 center;
+    Quat rotation;
+};
+
 
 class ParticleObject : public Object
 {
@@ -47,6 +127,7 @@ public:
             g_buffers->positions[i].w = row(3);
         }
     }
+
     Eigen::MatrixXf get_positions(){
         MapBuffers(g_buffers); // map the buffer if it's unmapped
         auto positions = Eigen::MatrixXf(r-l, 4);
@@ -58,9 +139,34 @@ public:
         }
         return positions;
     }
+
+    void set_velocities(const Eigen::MatrixXf& velocity){
+        if(velocity.rows() != r-l){
+            throw std::runtime_error("size missmatch: input " + string() + " while the velocities of " + mName + " require " + std::to_string(r-l));
+        }
+        MapBuffers(g_buffers); // map the buffer if it's unmapped
+        for(int i=l;i<r;++i){
+            auto row = velocity.row(i);
+            g_buffers->velocities[i].x = row(0);
+            g_buffers->velocities[i].y = row(1);
+            g_buffers->velocities[i].z = row(2);
+        }
+    }
+
+    Eigen::MatrixXf get_velocities(){
+        MapBuffers(g_buffers); // map the buffer if it's unmapped
+        auto velocity = Eigen::MatrixXf(r-l, 4);
+        for(int i=l;i<r;++i){
+            velocity(i, 0) = g_buffers->velocities[i].x;
+            velocity(i, 1) = g_buffers->velocities[i].y;
+            velocity(i, 2) = g_buffers->velocities[i].z;
+        }
+        return velocity;
+    }
     int l;
     int r;
 };
+
 
 
 class ParticleShape : public ParticleObject

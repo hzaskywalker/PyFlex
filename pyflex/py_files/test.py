@@ -92,16 +92,19 @@ def test2():
     scene.add(fluid)
     scene.add(fluid2)
 
+    box33 = pyflex.KBox("box33", center=[0.3, 3, 0.3], scale=[0.5, 0.5, 0.5], color=[1, 0, 0, 1])
+    scene.add(box33)
+    box44 = pyflex.KBox("box44", center=[1, 3, 1], scale=[1., 1., 1.], color=[0.3, 0.3, 0, 1])
+    scene.add(box44)
 
     sim.reset(center=False)
     for i in tqdm.trange(60):
         q = sim.step()
-        img = sim.render()
-        print(img.shape, img.dtype)
-        import cv2
-        cv2.imshow('x', img)
-        cv2.waitKey(0)
-
+        #img = sim.render()[::-1,:,[2,1,0,3]]
+        #print(img.shape, img.dtype)
+        #import cv2
+        #cv2.imshow('x', img)
+        #cv2.waitKey(0)
 
     x = bunny.position
     print(x)
