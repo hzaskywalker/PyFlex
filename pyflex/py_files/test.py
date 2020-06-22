@@ -306,6 +306,6 @@ def test5():
 if __name__ == '__main__':
     #test2()
     #test1()
-    #test3()
+    test3()
     #test4()
-    test5()
+    #test5()
