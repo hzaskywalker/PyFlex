@@ -81,6 +81,9 @@ PYBIND11_MODULE(pyflex, m)
         .def_readwrite("numPlanes", &MyScene::_numPlanes)
         .def_readwrite("camPos", &MyScene::camPos)
         .def_readwrite("camAngle", &MyScene::camAngle)
+        .def_readwrite("drawMesh", &MyScene::_drawMesh)
+        .def_readwrite("drawPoints", &MyScene::_drawPoints)
+        .def_readwrite("drawFluids", &MyScene::_drawFluids)
         .def("add", &MyScene::add_objects, py::arg("object") = ObjectPtr(0));
 
     /* --------------------- Particle Objects .......................*/
@@ -89,7 +92,8 @@ PYBIND11_MODULE(pyflex, m)
     .def_property("velocity", &Object::get_velocities, &Object::set_velocities);
 
     PyParticleShape.def(py::init<string, string, XVec3, XVec3, float, XVec4, float, float>(), py::arg("name"), py::arg("path"), py::arg("lower") = XVec3({0, 0, 0}), py::arg("scale") = XVec3({1., 1., 1.}), py::arg("rotation") = 0., py::arg("color") = XVec4({0.0f, 0.0f, 0.0f, 0.0f}), py::arg("invMass") = 1.0f, py::arg("spacing") = 0.05)
-        .def_property_readonly("filename", [](ParticleShape &shape) { return shape.filename; });
+        .def_property_readonly("filename", [](ParticleShape &shape) { return shape.filename; })
+        .def("rotate", &ParticleShape::rotate, py::arg("rotation"));
 
     PyFluidGrid.def(py::init<string, XVec3, int, int, int, float, XVec4, float, float>(), py::arg("name"), py::arg("lower") = XVec3({0, 0, 0}), py::arg("dimx") = 40, py::arg("dimy") = 40, py::arg("dimz") = 40, py::arg("radius") = 0.03f, py::arg("color") = XVec4({0.113f, 0.425f, 0.55f, 1.f}), py::arg("invMass") = 1.0f, py::arg("jitter") = 0.005f);
 

@@ -171,11 +171,42 @@ public:
     {
     }
 
+    //void set_positions(const Eigen::MatrixXf& position){
+    //    ParticleObject::set_positions(position);
+	//	NvFlexGetRigids(g_solver, NULL, NULL, NULL, NULL, NULL, NULL, NULL, g_buffers->rigidRotations.buffer, g_buffers->rigidTranslations.buffer);
+    //}
+
+    void rotate(const Eigen::MatrixXf& rotation){
+        auto position = get_positions();
+        position.block(0, 0, position.rows(), 3) = position.block(0, 0, position.rows(), 3) * rotation;
+        set_positions(position);
+        if(rigid){
+            auto xxx = Matrix33(Vec3(rotation(0, 0), rotation(1, 0), rotation(2, 0)), Vec3(rotation(0, 1), rotation(1, 1), rotation(2, 1)), Vec3(rotation(0, 2), rotation(1, 2), rotation(2, 2)));
+            Quat ans = Quat(xxx) * g_buffers->rigidRotations[rigid_index];
+
+            g_buffers->rigidRotations[rigid_index].x = ans.x;
+            g_buffers->rigidRotations[rigid_index].y = ans.y;
+            g_buffers->rigidRotations[rigid_index].z = ans.z;
+            g_buffers->rigidRotations[rigid_index].w = ans.w;
+
+	auto xx = g_buffers->rigidRotations[0];
+	cout<<"xxx"<<" "<<rigid_index<<endl;
+	cout<<xx.x<<" "<<xx.y<<" "<<xx.z<<" "<<xx.w<<endl;
+	cout<<"should be Quat "<<ans.x<<" "<<ans.y<<" "<<ans.z<<" "<<ans.w<<endl;
+        }
+    }
+
     void Initialize(int group)
     {
         l = g_buffers->positions.size();
         CreateParticleShape(GetFilePathByPlatform(filename.c_str()).c_str(), lower, scale, rotation, spacing, velocity, invMass, rigid, rigidStiffness, NvFlexMakePhase(group, 0), skin, jitter, skinOffset, skinExpand, color, springStiffness);
         r = g_buffers->positions.size();
+
+        if(rigid){
+            rigid_index=g_buffers->rigidOffsets.size() - 2;
+        } else {
+            rigid_index = -1;
+        }
     }
 
     const string filename;
@@ -193,6 +224,8 @@ public:
     Vec3 skinOffset;
     float skinExpand;
     float springStiffness;
+
+    int rigid_index;
 };
 
 class FluidGrid : public ParticleObject
@@ -286,6 +319,10 @@ public:
     XVec3 camPos = {6.0f, 8.0f, 18.0f};
     XVec3 camAngle = {0.0f, -DegToRad(20.0f), 0.0f};
 
+    bool _drawMesh=true;
+    bool _drawPoints=false;
+    bool _drawFluids=true;
+
     void set_params()
     {
         g_params.numIterations = _numIterations;
@@ -354,6 +391,10 @@ public:
             g_camAngle = Vec3(camAngle.data());
         }
 
+        g_drawMesh = _drawMesh;
+        g_drawPoints = _drawPoints;
+        g_drawEllipsoids = _drawFluids;
+
         g_warmup = true;
         g_sceneLower = Vec3(0.0f);
         g_numSubsteps = 2;
@@ -379,8 +420,6 @@ public:
         g_waveAmplitude = 2.0f;
 
         // draw options
-        g_drawPoints = false;
-        g_drawEllipsoids = true;
         g_drawDiffuse = true;
     }
 
@@ -405,6 +444,7 @@ public:
     ScenePtr myscene;
     int scene_id;
     AgentPtr agent;
+    bool start;
     Simulator(bool rendering)
     {
         num_sim += 1;
@@ -419,10 +459,14 @@ public:
 
         g_agent = new Agent();
         agent = AgentPtr(g_agent);
+
+        start = false;
     }
 
     bool step()
     {
+        if(!start)
+            throw runtime_error("You must reset the scene to step");
         UpdateFrame();
         if (g_render)
         {
@@ -462,6 +506,7 @@ public:
 
     void reset(bool centerCamera = false)
     {
+        start = true;
         // reset the scene ...
         g_scene = scene_id;
         Reset(centerCamera);

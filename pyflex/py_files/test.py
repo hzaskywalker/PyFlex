@@ -134,8 +134,6 @@ def test3():
     scene.numPlanes = 5
 
     scene.camPos = [0, 3, 2]
-    # the second is the rotation about x ...
-    # the first is the rotation about y ...
     scene.camAngle = [0, -np.pi/4, 0]
 
     ground = pyflex.KBox("ground", center=[0, 0, 0], scale=[2, 0.1, 2], color=[0.9, 0.9, 0.9, 1])
@@ -185,7 +183,77 @@ def test3():
                 door.velocity = [0, 0.1, 0]
                 trigger = 1
 
+def test4():
+    import pyflex
+    sim = pyflex.Simulator(rendering=True)
+    scene = sim.get_scene()
+
+    radius = 0.1
+    restDistance = radius * 0.55
+    scene.radius = radius
+    scene.dynamicFriction = 0.01
+    scene.viscosity = 2.0
+    scene.numIterations = 4
+    scene.vorticityConfinement = 40.0
+    scene.fluidRestDistance = restDistance
+    scene.solidPressure = 0.
+    scene.relaxationFactor = 0.0
+    scene.cohesion = 0.02
+    scene.collisionDistance = 0.01
+    scene.numPlanes = 5
+
+    scene.camPos = [0, 3, 2]
+    scene.camAngle = [0, -np.pi/4, 0]
+
+    ground = pyflex.KBox("ground", center=[0, 0, 0], scale=[2, 0.1, 2], color=[0.9, 0.9, 0.9, 1])
+    scene.add(ground)
+
+    spacing = 0.05
+    cup = pyflex.Shape("sphere", "/home/hza/fluid/PyFlex/data/cup.ply", [0, 0, 0.], [1, 1, 1], 0, [0, 0, 0, 0], 0.4, spacing=spacing)
+    scene.add(cup)
+
+    #fluid = pyflex.Fluid("water", [0.3, .3, 0.3], 4, 10, 4, 0.05, invMass=1., jitter=0)
+
+    #scene.add(fluid)
+
+    #agent = sim.get_agent()
+    #agent.add(cup)
+
+    scene.drawMesh=False
+    scene.drawPoints=True
+    scene.drawFluids = False
+
+    sim.reset(center=False)
+
+    #img = sim.render()[::-1, :,[2, 1, 0]]
+    #import cv2
+    #cv2.imshow('x', img)
+    #cv2.waitKey(0)
+
+    pos = cup.position
+    #print(np.dot(pos[:,:3], [[0, 1, 0], [1, 0, 0], [0, 0, -1]])[:10])
+    #cup.position = pos
+    ang = np.pi * 0.99 # mysterious behavior if I set this to np.pi
+    cup.rotate([[np.cos(ang), np.sin(ang), 0], [-np.sin(ang), np.cos(ang), 0], [0, 0, 1]])
+    pos = cup.position
+    print(pos[:10])
+
+    pos[:, 1] += 2
+    cup.position = pos
+
+
+
+    while True:
+        sim.step()
+        #print(cup.position[0, 1])
+        img = sim.render()[::-1, :,[2, 1, 0]]
+        import cv2
+        cv2.imshow('x', img)
+        cv2.waitKey(0)
+        #input()
+
 if __name__ == '__main__':
     #test2()
     #test1()
-    test3()
+    #test3()
+    test4()
