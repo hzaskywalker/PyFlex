@@ -112,8 +112,6 @@ inline float joyAxisFilter(int value, int stick)
 		return 0.0f;
 }
 
-SDL_GameController* g_gamecontroller = NULL;
-
 using namespace std;
 
 
@@ -123,6 +121,7 @@ class Agent;
 Agent* g_agent=nullptr;
 
 
+bool g_benchmark = false;
 int g_screenWidth = 1280;
 int g_screenHeight = 720;
 int g_msaaSamples = 8;
@@ -134,7 +133,6 @@ int g_device = -1;
 char g_deviceName[256];
 bool g_vsync = true; //change this option can change the framerate
 
-bool g_benchmark = false;
 bool g_extensions = true;
 bool g_teamCity = false;
 bool g_interop = false;
@@ -1989,148 +1987,17 @@ int DoUI()
 	return newScene;
 }
 
-void UpdateFrame()
+
+int RenderStep()
 {
-	static double lastTime;
-
-	// real elapsed frame time
-	double frameBeginTime = GetSeconds();
-
-	g_realdt = float(frameBeginTime - lastTime);
-	lastTime = frameBeginTime;
-
-	// do gamepad input polling
-	double currentTime = frameBeginTime;
-	static double lastJoyTime = currentTime;
-
-	if (g_render && g_gamecontroller && currentTime - lastJoyTime > g_dt)
-	{
-		lastJoyTime = currentTime;
-
-		int leftStickX = SDL_GameControllerGetAxis(g_gamecontroller, SDL_CONTROLLER_AXIS_LEFTX);
-		int leftStickY = SDL_GameControllerGetAxis(g_gamecontroller, SDL_CONTROLLER_AXIS_LEFTY);
-		int rightStickX = SDL_GameControllerGetAxis(g_gamecontroller, SDL_CONTROLLER_AXIS_RIGHTX);
-		int rightStickY = SDL_GameControllerGetAxis(g_gamecontroller, SDL_CONTROLLER_AXIS_RIGHTY);
-		int leftTrigger = SDL_GameControllerGetAxis(g_gamecontroller, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
-		int rightTrigger = SDL_GameControllerGetAxis(g_gamecontroller, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
-
-		Vec2 leftStick(joyAxisFilter(leftStickX, 0), joyAxisFilter(leftStickY, 0));
-		Vec2 rightStick(joyAxisFilter(rightStickX, 1), joyAxisFilter(rightStickY, 1));
-		Vec2 trigger(leftTrigger / 32768.0f, rightTrigger / 32768.0f);
-
-		if (leftStick.x != 0.0f || leftStick.y != 0.0f ||
-			rightStick.x != 0.0f || rightStick.y != 0.0f)
-		{
-			// note constant factor to speed up analog control compared to digital because it is more controllable.
-			g_camVel.z = -4 * g_camSpeed * leftStick.y;
-			g_camVel.x = 4 * g_camSpeed * leftStick.x;
-
-			// cam orientation
-			g_camAngle.x -= rightStick.x * 0.05f;
-			g_camAngle.y -= rightStick.y * 0.05f;
-		}
-
-		// Handle left stick motion
-		static bool bLeftStick = false;
-
-		if ((leftStick.x != 0.0f || leftStick.y != 0.0f) && !bLeftStick)
-		{
-			bLeftStick = true;
-		}
-		else if ((leftStick.x == 0.0f && leftStick.y == 0.0f) && bLeftStick)
-		{
-			bLeftStick = false;
-			g_camVel.z = -4 * g_camSpeed * leftStick.y;
-			g_camVel.x = 4 * g_camSpeed * leftStick.x;
-		}
-
-		// Handle triggers as controller button events
-		void ControllerButtonEvent(SDL_ControllerButtonEvent event);
-
-		static bool bLeftTrigger = false;
-		static bool bRightTrigger = false;
-		SDL_ControllerButtonEvent e;
-
-		if (!bLeftTrigger && trigger.x > 0.0f)
-		{
-			e.type = SDL_CONTROLLERBUTTONDOWN;
-			e.button = SDL_CONTROLLER_BUTTON_LEFT_TRIGGER;
-			ControllerButtonEvent(e);
-			bLeftTrigger = true;
-		}
-		else if (bLeftTrigger && trigger.x == 0.0f)
-		{
-			e.type = SDL_CONTROLLERBUTTONUP;
-			e.button = SDL_CONTROLLER_BUTTON_LEFT_TRIGGER;
-			ControllerButtonEvent(e);
-			bLeftTrigger = false;
-		}
-
-		if (!bRightTrigger && trigger.y > 0.0f)
-		{
-			e.type = SDL_CONTROLLERBUTTONDOWN;
-			e.button = SDL_CONTROLLER_BUTTON_RIGHT_TRIGGER;
-			ControllerButtonEvent(e);
-			bRightTrigger = true;
-		}
-		else if (bRightTrigger && trigger.y == 0.0f)
-		{
-			e.type = SDL_CONTROLLERBUTTONDOWN;
-			e.button = SDL_CONTROLLER_BUTTON_RIGHT_TRIGGER;
-			ControllerButtonEvent(e);
-			bRightTrigger = false;
-		}
-	}
-
-	//-------------------------------------------------------------------
-	// Scene Update
-
-	double waitBeginTime = GetSeconds();
-
-	MapBuffers(g_buffers);
-
-	double waitEndTime = GetSeconds();
-
-	// Getting timers causes CPU/GPU sync, so we do it after a map
-	float newSimLatency = NvFlexGetDeviceLatency(g_solver, &g_GpuTimers.computeBegin, &g_GpuTimers.computeEnd, &g_GpuTimers.computeFreq);
-	float newGfxLatency = 0;
-	if(g_render){
-		newGfxLatency = RendererGetDeviceTimestamps(&g_GpuTimers.renderBegin, &g_GpuTimers.renderEnd, &g_GpuTimers.renderFreq);
-	}
-	(void)newGfxLatency;
-
-	if(g_render)
-		UpdateCamera();
-
-	if (!g_pause || g_step)
-	{
-		UpdateEmitters();
-		if(g_render)
-			UpdateMouse();
-		UpdateWind();
-		UpdateScene();
-		if(g_agent!=nullptr)
-			g_agent->update();
-	}
-
-	//-------------------------------------------------------------------
-	// Render
-
-	double renderBeginTime = GetSeconds();
+	MapBuffers(g_buffers);//ensure is mapped.
 	int newScene = -1;
 	if(g_render){
 
 		if (g_profile && (!g_pause || g_step))
 		{
-			if (g_benchmark)
-			{
-				g_numDetailTimers = NvFlexGetDetailTimers(g_solver, &g_detailTimers);
-			}
-			else
-			{
-				memset(&g_timers, 0, sizeof(g_timers));
-				NvFlexGetTimers(g_solver, &g_timers);
-			}
+			memset(&g_timers, 0, sizeof(g_timers));
+			NvFlexGetTimers(g_solver, &g_timers);
 		}
 
 		StartFrame(Vec4(g_clearColor, 1.0f));
@@ -2158,21 +2025,14 @@ void UpdateFrame()
 
 		g_mousePos = origin + dir*g_mouseT;
 	}
+	return newScene;
+}
 
-	double renderEndTime = GetSeconds();
 
-	// if user requested a scene reset process it now
-	if (g_resetScene)
-	{
-		Reset(true);
-		g_resetScene = false;
-	}
-
-	//-------------------------------------------------------------------
-	// Flex Update
-
-	double updateBeginTime = GetSeconds();
-
+void FlexStep()
+{
+	//ensure the buffer is unmapped
+	UnmapBuffers(g_buffers);
 	// send any particle updates to the solver
 	NvFlexSetParticles(g_solver, g_buffers->positions.buffer, NULL);
 	NvFlexSetVelocities(g_solver, g_buffers->velocities.buffer, NULL);
@@ -2252,7 +2112,71 @@ void UpdateFrame()
 		// read back just the new diffuse particle count, render buffers will be updated during rendering
 		NvFlexGetDiffuseParticles(g_solver, NULL, NULL, g_buffers->diffuseCount.buffer);
 	}
+}
 
+
+void UpdateFrame()
+{
+	static double lastTime;
+
+	// real elapsed frame time
+	double frameBeginTime = GetSeconds();
+
+	g_realdt = float(frameBeginTime - lastTime);
+	lastTime = frameBeginTime;
+
+	// do gamepad input polling
+	double currentTime = frameBeginTime;
+	//-------------------------------------------------------------------
+	// Scene Update
+
+	double waitBeginTime = GetSeconds();
+
+	MapBuffers(g_buffers);
+
+	double waitEndTime = GetSeconds();
+
+	// Getting timers causes CPU/GPU sync, so we do it after a map
+	float newSimLatency = NvFlexGetDeviceLatency(g_solver, &g_GpuTimers.computeBegin, &g_GpuTimers.computeEnd, &g_GpuTimers.computeFreq);
+	float newGfxLatency = 0;
+	if(g_render){
+		newGfxLatency = RendererGetDeviceTimestamps(&g_GpuTimers.renderBegin, &g_GpuTimers.renderEnd, &g_GpuTimers.renderFreq);
+	}
+	(void)newGfxLatency;
+
+	if(g_render)
+		UpdateCamera();
+
+	if (!g_pause || g_step)
+	{
+		UpdateEmitters();
+		if(g_render)
+			UpdateMouse();
+		UpdateWind();
+		UpdateScene();
+		if(g_agent!=nullptr)
+			g_agent->update();
+	}
+
+	//-------------------------------------------------------------------
+	// Render
+
+	double renderBeginTime = GetSeconds();
+	int newScene = RenderStep();
+	double renderEndTime = GetSeconds();
+
+	// if user requested a scene reset process it now
+	if (g_resetScene)
+	{
+		Reset(true);
+		g_resetScene = false;
+	}
+
+	//-------------------------------------------------------------------
+	// Flex Update
+
+	double updateBeginTime = GetSeconds();
+	FlexStep();
 	double updateEndTime = GetSeconds();
 
 	//-------------------------------------------------------
@@ -2269,8 +2193,6 @@ void UpdateFrame()
 	g_renderTime = (g_renderTime == 0.0f) ? newRenderTime : Lerp(g_renderTime, newRenderTime, timerSmoothing);
 	g_waitTime = (g_waitTime == 0.0f) ? newWaitTime : Lerp(g_waitTime, newWaitTime, timerSmoothing);
 	g_simLatency = (g_simLatency == 0.0f) ? newSimLatency : Lerp(g_simLatency, newSimLatency, timerSmoothing);
-
-	if (g_benchmark) newScene = BenchmarkUpdate();
 
 	// flush out the last frame before freeing up resources in the event of a scene change
 	// this is necessary for d3d12
@@ -2299,8 +2221,7 @@ void DumpAftermathData()
 
 void ReshapeWindow(int width, int height)
 {
-	if (!g_benchmark)
-		printf("Reshaping\n");
+	printf("Reshaping\n");
 
 	ReshapeRender(g_window);
 
@@ -2720,18 +2641,6 @@ void ControllerButtonEvent(SDL_ControllerButtonEvent event)
 	}
 }
 
-void ControllerDeviceUpdate()
-{
-	if (SDL_NumJoysticks() > 0)
-	{
-		SDL_JoystickEventState(SDL_ENABLE);
-		if (SDL_IsGameController(0))
-		{
-			g_gamecontroller = SDL_GameControllerOpen(0);
-		}
-	}
-}
-
 void SDLInit(const char* title)
 {
 
@@ -2806,11 +2715,6 @@ bool SDLMain()
         case SDL_CONTROLLERBUTTONUP:
         case SDL_CONTROLLERBUTTONDOWN:
             ControllerButtonEvent(e.cbutton);
-            break;
-
-        case SDL_JOYDEVICEADDED:
-        case SDL_JOYDEVICEREMOVED:
-            ControllerDeviceUpdate();
             break;
         }
     }
@@ -3221,9 +3125,6 @@ void initialize(bool rendering=false){
 	// store device name
 	strcpy(g_deviceName, NvFlexGetDeviceName(g_flexLib));
 	printf("Compute Device: %s\n\n", g_deviceName);
-
-	if (g_benchmark)
-		g_scene = BenchmarkInit();
 
 	if(g_render){
 		// create shadow maps

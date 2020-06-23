@@ -282,19 +282,20 @@ def test5():
     scene.add(ground)
 
     spacing = 0.025
-    cup = pyflex.Shape("sphere", "/home/hza/fluid/PyFlex/data/cup.ply", [0, 0, 0.], [1, 1, 1], 0, [0, 0, 0, 0], 0.4, spacing=spacing)
+    cup = pyflex.Shape("sphere", "/home/hza/fluid/PyFlex/data/cup.ply", [0, 0, 0.], [1, 0.3, 1], 0, [0, 0, 0, 0], 0.4, spacing=spacing)
     scene.add(cup)
 
-    fluid = pyflex.Fluid("water", [0.2, .3, 0.2], 6, 25, 6, 0.06, invMass=1., jitter=0)
+    fluid = pyflex.Fluid("water", [0.2, .3, 0.2], 6, 25, 6, 0.05, invMass=1., jitter=0)
     scene.add(fluid)
 
     agent = sim.get_agent()
     agent.add(cup)
+    agent.speed = 10
 
-    scene.drawMesh=False
-    scene.drawPoints=True
-    scene.drawFluids = False
-    scene.wireframe = True
+    #scene.drawMesh=False
+    #scene.drawPoints=True
+    #scene.drawFluids = False
+    #scene.wireframe = True
     scene.numSubsteps = 4
     scene.numIterations = 6
 
