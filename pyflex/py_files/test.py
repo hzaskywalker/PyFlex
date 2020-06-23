@@ -28,6 +28,10 @@ class Agent:
                     vel[:, 0] -= cc
                 if d:
                     vel[:, 0] += cc
+                if j:
+                    vel[:, 1] += 1.
+                if k:
+                    vel[:, 1] -= 1.
                 i.velocity = vel
         self.keyboard.reset()
 
@@ -309,10 +313,12 @@ def test5():
     scene.add(ground)
 
     spacing = 0.025
-    cup = pyflex.Shape("sphere", "/home/hza/fluid/PyFlex/data/cup.ply", [0, 0, 0.], [1., 1., 1.], 0, [0, 0, 0, 0], 0.4, spacing=spacing)
+    cup = pyflex.Shape("sphere", "/home/hza/fluid/PyFlex/data/cup.ply", [0, 0, 0.], [0.3, 0.3, 0.3], 0, [0, 0, 0, 0], 0.4, spacing=spacing)
     scene.add(cup)
 
-    fluid = pyflex.Fluid("water", [0.2, .3, 0.2], 6, 30, 6, radius*0.55, invMass=1., jitter=0)
+
+    #fluid = pyflex.Fluid("water", [0.2, .3, 0.2], 6, 30, 6, radius*0.55, invMass=1., jitter=0)
+    fluid = pyflex.Fluid("water", [0.2, .3, 0.2], 20, 100, 20, radius*0.55, invMass=1., jitter=0)
     scene.add(fluid)
 
     agent = Agent(sim)
