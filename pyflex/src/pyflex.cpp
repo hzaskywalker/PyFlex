@@ -63,7 +63,7 @@ PYBIND11_MODULE(pyflex, m)
         .def("reset", &Simulator::reset, py::arg("center") = true)
         .def("get_scene", &Simulator::get_scene, py::return_value_policy::reference)
         .def("set_scene", &Simulator::set_scene, py::arg("name") = "empty")
-        .def("render", &Simulator::render, py::return_value_policy::automatic)
+        .def("render", &Simulator::render, py::arg("mode")="human", py::return_value_policy::automatic)
         .def("get_agent", &Simulator::get_agent, py::return_value_policy::reference)
         .def("step", &Simulator::step);
 

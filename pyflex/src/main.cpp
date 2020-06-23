@@ -443,6 +443,19 @@ public:
     int scene_id;
     AgentPtr agent;
     bool start;
+
+    int newScene;
+    bool new_frame;
+    double lastTime;
+    double frameBeginTime;
+    float newSimLatency;
+    float newGfxLatency;
+    double renderBeginTime;
+    double renderEndTime;
+    double updateBeginTime;
+    double updateEndTime;
+
+
     Simulator(bool rendering)
     {
         num_sim += 1;
@@ -461,11 +474,82 @@ public:
         start = false;
     }
 
+    void pre_scene_update(){
+        if(!new_frame)
+            return;
+        new_frame = false;
+
+        static double lastTime;
+        double frameBeginTime = GetSeconds();
+        g_realdt = float(frameBeginTime - lastTime);
+        lastTime = frameBeginTime;
+
+        //-------------------------------------------------------------------
+        // Scene Update
+        MapBuffers(g_buffers);
+
+        // Getting timers causes CPU/GPU sync, so we do it after a map
+        float newSimLatency = NvFlexGetDeviceLatency(g_solver, &g_GpuTimers.computeBegin, &g_GpuTimers.computeEnd, &g_GpuTimers.computeFreq);
+        float newGfxLatency = 0;
+        if(g_render){
+            newGfxLatency = RendererGetDeviceTimestamps(&g_GpuTimers.renderBegin, &g_GpuTimers.renderEnd, &g_GpuTimers.renderFreq);
+        }
+        (void)newGfxLatency;
+
+        if(g_render)
+            UpdateCamera();
+
+        if (!g_pause || g_step)
+        {
+            UpdateEmitters();
+            if(g_render)
+                UpdateMouse();
+            UpdateWind();
+            UpdateScene();
+            if(g_agent!=nullptr)
+                g_agent->update();
+        }
+    }
+
     bool step()
     {
         if(!start)
             throw runtime_error("You must reset the scene to step");
-        UpdateFrame();
+
+        pre_scene_update();
+
+        updateBeginTime = GetSeconds();
+        FlexStep();
+        updateEndTime = GetSeconds();
+
+        //-------------------------------------------------------
+        // Update the on-screen timers
+
+        float newUpdateTime = float(updateEndTime - updateBeginTime);
+        float newRenderTime = float(renderEndTime - renderBeginTime);
+
+        // Exponential filter to make the display easier to read
+        const float timerSmoothing = 0.05f;
+
+        g_updateTime = (g_updateTime == 0.0f) ? newUpdateTime : Lerp(g_updateTime, newUpdateTime, timerSmoothing);
+        g_renderTime = (g_renderTime == 0.0f) ? newRenderTime : Lerp(g_renderTime, newRenderTime, timerSmoothing);
+        g_simLatency = (g_simLatency == 0.0f) ? newSimLatency : Lerp(g_simLatency, newSimLatency, timerSmoothing);
+
+        // flush out the last frame before freeing up resources in the event of a scene change
+        // this is necessary for d3d12
+        if(g_render){
+            PresentFrame(g_vsync);
+        }
+
+        // if gui or benchmark requested a scene change process it now
+        if (newScene != -1)
+        {
+            g_scene = newScene;
+            Init(g_scene);
+        }
+
+        new_frame = true;
+
         if (g_render)
         {
             return SDLMain();
@@ -476,13 +560,23 @@ public:
         }
     }
 
-    py::array_t<uint8_t> render(){
-        auto data = new uint32_t[g_screenWidth*g_screenHeight];
-		ReadFrame((int*)data, g_screenWidth, g_screenHeight);
+    py::array_t<uint8_t> render(string mode="human"){
+        pre_scene_update();
 
-        auto ans = py::array_t<uint8_t>({g_screenHeight, g_screenWidth, 4}, (unsigned char*)data);
-		delete[] data;
-        return ans;
+        renderBeginTime = GetSeconds();
+        newScene = RenderStep();
+        renderEndTime = GetSeconds();
+
+        if(mode == "rgb_array"){
+            auto data = new uint32_t[g_screenWidth*g_screenHeight];
+            ReadFrame((int*)data, g_screenWidth, g_screenHeight);
+
+            auto ans = py::array_t<uint8_t>({g_screenHeight, g_screenWidth, 4}, (unsigned char*)data);
+            delete[] data;
+            return ans;
+        } else {
+            return py::array_t<uint8_t>({});
+        }
     }
 
     ScenePtr get_scene()
@@ -505,6 +599,9 @@ public:
     void reset(bool centerCamera = false)
     {
         start = true;
+
+        newScene = -1;
+        new_frame = true;
         // reset the scene ...
         g_scene = scene_id;
         Reset(centerCamera);

@@ -177,6 +177,7 @@ def test3():
 
     trigger = 0
     while True:
+        sim.render()
         sim.step()
         if not trigger:
             if sphere.position.mean(axis=0)[2] < 0.2:
@@ -282,7 +283,7 @@ def test5():
     scene.add(ground)
 
     spacing = 0.025
-    cup = pyflex.Shape("sphere", "/home/hza/fluid/PyFlex/data/cup.ply", [0, 0, 0.], [1, 0.3, 1], 0, [0, 0, 0, 0], 0.4, spacing=spacing)
+    cup = pyflex.Shape("sphere", "/home/hza/fluid/PyFlex/data/cup.ply", [0, 0, 0.], [1., 1., 1.], 0, [0, 0, 0, 0], 0.4, spacing=spacing)
     scene.add(cup)
 
     fluid = pyflex.Fluid("water", [0.2, .3, 0.2], 6, 25, 6, 0.05, invMass=1., jitter=0)
@@ -301,12 +302,15 @@ def test5():
 
     sim.reset(center=False)
 
-    while True:
+    #while True:
+    for i in tqdm.trange(100):
+        x = sim.render()
         sim.step()
+    print(fluid.position.mean(axis=0))
 
 if __name__ == '__main__':
     #test2()
     #test1()
-    test3()
     #test4()
-    #test5()
+    test5()
+    #test3()

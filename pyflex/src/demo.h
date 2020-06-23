@@ -502,7 +502,6 @@ float g_diffuseOutscatter;
 float g_dt = 1.0f / 60.0f;	// the time delta used for simulation
 float g_realdt;				// the real world time delta between updates
 
-float g_waitTime;		// the CPU time spent waiting for the GPU
 float g_updateTime;     // the CPU time spent on Flex
 float g_renderTime;		// the CPU time spent calling OpenGL to render the scene
                         // the above times don't include waiting for vsync
@@ -2115,6 +2114,7 @@ void FlexStep()
 }
 
 
+
 void UpdateFrame()
 {
 	static double lastTime;
@@ -2124,17 +2124,9 @@ void UpdateFrame()
 
 	g_realdt = float(frameBeginTime - lastTime);
 	lastTime = frameBeginTime;
-
-	// do gamepad input polling
-	double currentTime = frameBeginTime;
 	//-------------------------------------------------------------------
 	// Scene Update
-
-	double waitBeginTime = GetSeconds();
-
 	MapBuffers(g_buffers);
-
-	double waitEndTime = GetSeconds();
 
 	// Getting timers causes CPU/GPU sync, so we do it after a map
 	float newSimLatency = NvFlexGetDeviceLatency(g_solver, &g_GpuTimers.computeBegin, &g_GpuTimers.computeEnd, &g_GpuTimers.computeFreq);
@@ -2184,14 +2176,12 @@ void UpdateFrame()
 
 	float newUpdateTime = float(updateEndTime - updateBeginTime);
 	float newRenderTime = float(renderEndTime - renderBeginTime);
-	float newWaitTime = float(waitBeginTime - waitEndTime);
 
 	// Exponential filter to make the display easier to read
 	const float timerSmoothing = 0.05f;
 
 	g_updateTime = (g_updateTime == 0.0f) ? newUpdateTime : Lerp(g_updateTime, newUpdateTime, timerSmoothing);
 	g_renderTime = (g_renderTime == 0.0f) ? newRenderTime : Lerp(g_renderTime, newRenderTime, timerSmoothing);
-	g_waitTime = (g_waitTime == 0.0f) ? newWaitTime : Lerp(g_waitTime, newWaitTime, timerSmoothing);
 	g_simLatency = (g_simLatency == 0.0f) ? newSimLatency : Lerp(g_simLatency, newSimLatency, timerSmoothing);
 
 	// flush out the last frame before freeing up resources in the event of a scene change
