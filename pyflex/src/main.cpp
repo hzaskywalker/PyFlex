@@ -480,7 +480,7 @@ public:
         new_frame = false;
 
         static double lastTime;
-        double frameBeginTime = GetSeconds();
+        frameBeginTime = GetSeconds();
         g_realdt = float(frameBeginTime - lastTime);
         lastTime = frameBeginTime;
 
@@ -489,8 +489,8 @@ public:
         MapBuffers(g_buffers);
 
         // Getting timers causes CPU/GPU sync, so we do it after a map
-        float newSimLatency = NvFlexGetDeviceLatency(g_solver, &g_GpuTimers.computeBegin, &g_GpuTimers.computeEnd, &g_GpuTimers.computeFreq);
-        float newGfxLatency = 0;
+        newSimLatency = NvFlexGetDeviceLatency(g_solver, &g_GpuTimers.computeBegin, &g_GpuTimers.computeEnd, &g_GpuTimers.computeFreq);
+        newGfxLatency = 0;
         if(g_render){
             newGfxLatency = RendererGetDeviceTimestamps(&g_GpuTimers.renderBegin, &g_GpuTimers.renderEnd, &g_GpuTimers.renderFreq);
         }
@@ -506,8 +506,8 @@ public:
                 UpdateMouse();
             UpdateWind();
             UpdateScene();
-            if(g_agent!=nullptr)
-                g_agent->update();
+            //if(g_agent!=nullptr)
+            //    g_agent->update();
         }
     }
 
@@ -550,6 +550,20 @@ public:
 
         new_frame = true;
 
+        if (g_render)
+        {
+            return SDLMain();
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    bool step2()
+    {
+        //step with Nvidia pyflex
+        UpdateFrame();
         if (g_render)
         {
             return SDLMain();
@@ -621,7 +635,6 @@ public:
 void Agent::update()
 {
     //clear
-    mTime += g_dt;
     if(w||a||s||d){
         float cc = speed * g_dt;
         for (size_t i = 0; i < objects.size(); ++i)
@@ -649,5 +662,6 @@ void Agent::add_object(ObjectPtr obj)
 
 void Agent::reset()
 {
-    mTime = 0;
+    //mTime = 0;
+    w=a=s=d=j=k=false;
 }

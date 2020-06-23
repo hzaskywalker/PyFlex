@@ -57,15 +57,16 @@ PYBIND11_MODULE(pyflex, m)
     auto PyKinematicObject = py::class_<KinematicObject>(m, "KObject", PyObject);
     auto PyKinematicBox = py::class_<KinematicBox, KinematicBoxPtr>(m, "KBox", PyKinematicObject);
 
-    auto PyAgent = py::class_<Agent, AgentPtr>(m, "Agent");
+    auto PyAgent = py::class_<Agent, AgentPtr>(m, "Keyboard");
 
     PySimulator.def(py::init<bool>(), py::arg("rendering") = false)
         .def("reset", &Simulator::reset, py::arg("center") = true)
         .def("get_scene", &Simulator::get_scene, py::return_value_policy::reference)
         .def("set_scene", &Simulator::set_scene, py::arg("name") = "empty")
         .def("render", &Simulator::render, py::arg("mode")="human", py::return_value_policy::automatic)
-        .def("get_agent", &Simulator::get_agent, py::return_value_policy::reference)
-        .def("step", &Simulator::step);
+        .def("get_keyboard", &Simulator::get_agent, py::return_value_policy::reference)
+        .def("step", &Simulator::step)
+        .def("step2", &Simulator::step2);
 
     PyScene.def(py::init<char *>(), py::arg("name"))
         .def_readwrite("radius", &MyScene::_radius)
@@ -108,7 +109,14 @@ PYBIND11_MODULE(pyflex, m)
 
 
     PyAgent.def("add", &Agent::add_object, py::arg("object") = ObjectPtr(0))
-    .def_readwrite("speed", &Agent::speed);
+    .def_readwrite("speed", &Agent::speed)
+    .def("reset", &Agent::reset)
+    .def_readwrite("s", &Agent::s)
+    .def_readwrite("a", &Agent::a)
+    .def_readwrite("d", &Agent::d)
+    .def_readwrite("j", &Agent::j)
+    .def_readwrite("k", &Agent::k)
+    .def_readwrite("w", &Agent::w);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = VERSION_INFO;

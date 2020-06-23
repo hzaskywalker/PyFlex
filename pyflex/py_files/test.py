@@ -5,7 +5,31 @@ import tqdm
 from random import random
 import numpy as np
 
+class Agent:
+    def __init__(self, sim):
+        self.keyboard = sim.get_keyboard()
+        self.obj = []
+        self.speed = 1
 
+    def add(self, obj):
+        self.obj.append(obj)
+    
+    def update(self):
+        cc = 1./60 * self.speed
+        w,a,s,d,j,k=self.keyboard.w, self.keyboard.a,self.keyboard.s,self.keyboard.d,self.keyboard.j,self.keyboard.k
+        if w or a or s or d or j or k:
+            for i in self.obj:
+                vel = i.velocity
+                if w:
+                    vel[:, 2] -= cc
+                if s:
+                    vel[:, 2] += cc
+                if a:
+                    vel[:, 0] -= cc
+                if d:
+                    vel[:, 0] += cc
+                i.velocity = vel
+        self.keyboard.reset()
 
 def test1():
     import pyflex as flexbind
@@ -40,6 +64,7 @@ def test1():
 
     flexbind.destroy_scene()
     print("got here in python!!!")
+
 
 def test2():
     import pyflex
@@ -170,7 +195,7 @@ def test3():
     scene.add(boat)
 
     sim.reset(center=False)
-    agent = sim.get_agent()
+    agent = Agent(sim)
     agent.speed = 10
     agent.add(sphere)
     #exit(0)
@@ -178,12 +203,14 @@ def test3():
     trigger = 0
     while True:
         sim.render()
+        agent.update()
         sim.step()
         if not trigger:
             if sphere.position.mean(axis=0)[2] < 0.2:
                 door.moveTime = 2
                 door.velocity = [0, 0.1, 0]
                 trigger = 1
+
 
 def test4():
     # show the bugs of flex
@@ -244,8 +271,6 @@ def test4():
     pos[:, 1] += 2
     cup.position = pos
 
-
-
     while True:
         sim.step()
         #print(cup.position[0, 1])
@@ -254,6 +279,7 @@ def test4():
         cv2.imshow('x', img)
         cv2.waitKey(0)
         #input()
+
 
 def test5():
     import pyflex
@@ -286,10 +312,10 @@ def test5():
     cup = pyflex.Shape("sphere", "/home/hza/fluid/PyFlex/data/cup.ply", [0, 0, 0.], [1., 1., 1.], 0, [0, 0, 0, 0], 0.4, spacing=spacing)
     scene.add(cup)
 
-    fluid = pyflex.Fluid("water", [0.2, .3, 0.2], 6, 25, 6, 0.05, invMass=1., jitter=0)
+    fluid = pyflex.Fluid("water", [0.2, .3, 0.2], 6, 30, 6, radius*0.55, invMass=1., jitter=0)
     scene.add(fluid)
 
-    agent = sim.get_agent()
+    agent = Agent(sim)
     agent.add(cup)
     agent.speed = 10
 
@@ -303,10 +329,12 @@ def test5():
     sim.reset(center=False)
 
     #while True:
-    for i in tqdm.trange(100):
-        x = sim.render()
+    while True:
+        img = sim.render(mode='human')
+        agent.update()
         sim.step()
     print(fluid.position.mean(axis=0))
+
 
 if __name__ == '__main__':
     #test2()

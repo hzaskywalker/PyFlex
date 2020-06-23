@@ -26,15 +26,13 @@ class Agent
 {
 public:
     // Agent is contorllered by
-    bool w, a, s, d;
-    int jump; //you can only jump at certain location... ignore it now..
+    bool w, a, s, d, j, k;
     float speed = 1.f;
-    float mTime = 0.f;
-    vector<ObjectPtr> objects;
+    void reset();
 
+    vector<ObjectPtr> objects;
     void update();
     void add_object(ObjectPtr obj);
-    void reset();
 };
 
 using AgentPtr = std::shared_ptr<Agent>;

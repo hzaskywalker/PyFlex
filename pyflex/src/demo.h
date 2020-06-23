@@ -2448,9 +2448,16 @@ bool InputKeyboardDown(unsigned char key, int x, int y)
 	}
 	case 'j':
 	{
-		g_windTime = 0.0f;
-		g_windStrength = 1.5f;
-		g_windFrequency = 0.2f;
+		//jump
+		if(g_agent!=nullptr)
+			g_agent->j = true;
+		break;
+	}
+	case 'k':
+	{
+		//jump
+		if(g_agent!=nullptr)
+			g_agent->k = true;
 		break;
 	}
 	case '.':
