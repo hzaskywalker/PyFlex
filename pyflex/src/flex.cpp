@@ -27,7 +27,7 @@ py::array_t<double> make_array()
     return myarray;
 }
 
-PYBIND11_MODULE(pyflex, m)
+PYBIND11_MODULE(flex, m)
 {
     m.doc() = "pybind11 passing plugin";
 
@@ -85,9 +85,20 @@ PYBIND11_MODULE(pyflex, m)
         .def_readwrite("drawMesh", &MyScene::_drawMesh)
         .def_readwrite("drawPoints", &MyScene::_drawPoints)
         .def_readwrite("drawFluids", &MyScene::_drawFluids)
+        .def_readwrite("drawDiffuse", &MyScene::_drawDiffuse)
         .def_readwrite("wireframe", &MyScene::_wireframe)
         .def_readwrite("numSubsteps", &MyScene::_numSubsteps)
-        .def("add", &MyScene::add_objects, py::arg("object") = ObjectPtr(0));
+        .def_readwrite("warmup", &MyScene::_warmup)
+        .def_readwrite("numExtraParticles", &MyScene::_numExtraParticles)
+        .def_readwrite("maxDiffuseParticles", &MyScene::_maxDiffuseParticles)
+        .def_readwrite("diffuseScale", &MyScene::_diffuseScale)
+        .def_readwrite("sceneLower", &MyScene::_sceneLower)
+        .def_readwrite("sceneUpper", &MyScene::_sceneUpper)
+        .def("add", &MyScene::add_objects, py::arg("object") = ObjectPtr(0))
+        .def("erase", &MyScene::remove_objects, py::arg("object") = ObjectPtr(0))
+        .def("get", &MyScene::get_objects, py::arg("idx") = 0)
+        .def_property_readonly("n", &MyScene::n_objects)
+        .def("clear", &MyScene::clear);
 
     /* --------------------- Particle Objects .......................*/
 

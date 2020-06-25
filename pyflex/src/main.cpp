@@ -93,7 +93,6 @@ public:
     KinematicBox(string _name, XVec3 center, XVec3 scale, XVec4 rotation, XVec4 color):KinematicObject(_name, color), center(center.data()), halfEdge(scale(0)/2, scale(1)/2, scale(2)/2), rotation(rotation.data()){}
 
     void Initialize(int group){
-        cout<<"Initialize box..."<<endl;
         g_shapeColors.push_back(Vec3(color[0], color[1], color[2]));
         shape_id = g_buffers->shapePositions.size();
         AddBox(halfEdge, center, rotation);
@@ -318,7 +317,18 @@ public:
     bool _drawMesh=true;
     bool _drawPoints=false;
     bool _drawFluids=true;
+    bool _drawDiffuse=true;
     bool _wireframe = false;
+    bool _warmup = true;
+
+
+    float _maxDiffuseParticles = 64 * 1024;
+    float _numExtraParticles = 48 * 1024;
+    float _diffuseScale = 0.5f;
+    XVec3 _sceneLower = XVec3({0.0f, 0.0f, 0.0f});
+    XVec3 _sceneUpper = XVec3({1.2f, 0.0f, 0.0f});
+    //g_maxDiffuseParticles = 0;
+    //g_diffuseScale = 0.5f;
 
     void set_params()
     {
@@ -388,18 +398,15 @@ public:
             g_camAngle = Vec3(camAngle.data());
         }
 
-        g_drawMesh = _drawMesh;
-        g_drawPoints = _drawPoints;
-        g_drawEllipsoids = _drawFluids;
-        g_wireframe = _wireframe;
 
-        g_warmup = true;
-        g_sceneLower = Vec3(0.0f);
+        g_warmup = _warmup;
+        g_sceneLower = Vec3(_sceneLower.data());
+        g_sceneUpper = Vec3(_sceneUpper.data());
         g_numSubsteps = _numSubsteps;
 
-        g_maxDiffuseParticles = 64 * 1024;
-        g_numExtraParticles = 48 * 1024;
-        g_diffuseScale = 0.5f;
+        g_maxDiffuseParticles = _maxDiffuseParticles;
+        g_numExtraParticles = _numExtraParticles;
+        g_diffuseScale = _diffuseScale;
 
         /*
 		Emitter e1;
@@ -418,12 +425,40 @@ public:
         g_waveAmplitude = 2.0f;
 
         // draw options
-        g_drawDiffuse = true;
+        g_drawMesh = _drawMesh;
+        g_drawPoints = _drawPoints;
+        g_drawEllipsoids = _drawFluids;
+        g_drawDiffuse = _drawDiffuse;
+        g_wireframe = _wireframe;
     }
 
     void add_objects(ObjectPtr obj)
     {
         objects.push_back(obj);
+    }
+
+    void remove_objects(ObjectPtr obj)
+    {
+        //remove by name
+        for(size_t i = 0;i<objects.size();++i){
+            if(objects[i]->mName == obj->mName){
+                objects.erase(objects.begin()+i);
+                break;
+            }
+        }
+    }
+
+    void clear(){
+        //not sure if we need to erase it..
+        objects.clear();
+    }
+
+    int n_objects(){
+        return objects.size();
+    }
+
+    ObjectPtr get_objects(int i){
+        return objects[i];
     }
 
     void Update(){

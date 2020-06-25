@@ -46,11 +46,11 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 setup(
-    name='pyflex',
+    name='flex',
     version='0.0.1',
     description='A test project using pybind11 and CMake',
     long_description='',
-    ext_modules=[CMakeExtension('pyflex')],
+    ext_modules=[CMakeExtension('flex')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
 )

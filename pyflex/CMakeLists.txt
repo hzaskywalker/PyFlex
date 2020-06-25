@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.12)
-project(pyflex)
+project(flex)
 
 
 if (NOT DEFINED FleX_ROOT)
@@ -33,9 +33,9 @@ link_directories(${FleX_LIB_DIR})
 
 ######################################### Link via Pybind ############################################
 add_subdirectory(pybind11)
-pybind11_add_module(pyflex src/pyflex.cpp ${FleX_INCLUDE_SOURCE} ${FleX_INCLUDE_HEADER})
-target_compile_definitions(pyflex PRIVATE FleX_ROOT="${FleX_ROOT}")
-target_compile_options(pyflex PRIVATE -I/home/hza/anaconda3/include/python3.7m)
-target_include_directories(pyflex PRIVATE "${PYTHON_INCLUDE_DIRS}" -fPIC)
-target_link_libraries(pyflex PRIVATE ${FleX_DEPENDENCIES} -fPIC)
+pybind11_add_module(flex src/flex.cpp ${FleX_INCLUDE_SOURCE} ${FleX_INCLUDE_HEADER})
+target_compile_definitions(flex PRIVATE FleX_ROOT="${FleX_ROOT}")
+target_compile_options(flex PRIVATE -I/home/hza/anaconda3/include/python3.7m)
+target_include_directories(flex PRIVATE "${PYTHON_INCLUDE_DIRS}" -fPIC)
+target_link_libraries(flex PRIVATE ${FleX_DEPENDENCIES} -fPIC)
 

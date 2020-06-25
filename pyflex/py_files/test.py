@@ -29,14 +29,14 @@ class Agent:
                 if d:
                     vel[:, 0] += cc
                 if j:
-                    vel[:, 1] += 1.
+                    vel[:, 1] += 5.
                 if k:
-                    vel[:, 1] -= 1.
+                    vel[:, 1] -= 5.
                 i.velocity = vel
         self.keyboard.reset()
 
 def test1():
-    import pyflex as flexbind
+    import flex as flexbind
     main_loop_quit = False
 
 
@@ -71,19 +71,19 @@ def test1():
 
 
 def test2():
-    import pyflex
-    sim = pyflex.Simulator(rendering=True)
+    import flex
+    sim = flex.Simulator(rendering=True)
     scene = sim.get_scene()
     s = 0.1 * 0.5
-    bunny = pyflex.Shape(
+    bunny = flex.Shape(
         "bunny",
         "/home/hza/fluid/PyFlex/data/box.ply", [0.2, 0.2, 0.4], [1., 1., 1.], 0, [0, 0, 0, 0], 0.5, spacing=s
     )
-    sphere = pyflex.Shape(
+    sphere = flex.Shape(
         "sphere",
         "/home/hza/fluid/PyFlex/data/sphere.ply", [0.2, 0.8, 0.4], [1., 1., 1.], 0, [0, 0, 0, 0], 10, spacing=s
     )
-    box = pyflex.Shape(
+    box = flex.Shape(
         "sphere",
         "/home/hza/fluid/PyFlex/data/bunny.ply", [0.2, 0.8, 0.4], [0.3, 0.3, 0.3], 0, [0, 0, 0, 0], 1, spacing=s
     )
@@ -91,11 +91,11 @@ def test2():
     scene.add(sphere)
     scene.add(box)
 
-    fluid = pyflex.Fluid(
+    fluid = flex.Fluid(
         "fluid", [0.1, 2, 0.1], 40, 10, 40, 0.055, [1, 0.425, 0.55, 1.], 1.
     )
 
-    fluid2 = pyflex.Fluid(
+    fluid2 = flex.Fluid(
         "fluid2", [0.1, 4, 0.1], 40, 10, 40, 0.055, [1, 0.425, 0.55, 1.], 1.
     )
 
@@ -122,9 +122,9 @@ def test2():
     scene.add(fluid)
     scene.add(fluid2)
 
-    box33 = pyflex.KBox("box33", center=[0.3, 3, 0.3], scale=[0.5, 0.5, 0.5], color=[1, 0, 0, 1])
+    box33 = flex.KBox("box33", center=[0.3, 3, 0.3], scale=[0.5, 0.5, 0.5], color=[1, 0, 0, 1])
     scene.add(box33)
-    box44 = pyflex.KBox("box44", center=[1, 3, 1], scale=[1., 1., 1.], color=[0.3, 0.3, 0, 1])
+    box44 = flex.KBox("box44", center=[1, 3, 1], scale=[1., 1., 1.], color=[0.3, 0.3, 0, 1])
     scene.add(box44)
 
     sim.reset(center=False)
@@ -145,8 +145,8 @@ def test2():
 
 
 def test3():
-    import pyflex
-    sim = pyflex.Simulator(rendering=True)
+    import flex
+    sim = flex.Simulator(rendering=True)
     scene = sim.get_scene()
 
     radius = 0.1
@@ -166,20 +166,20 @@ def test3():
     scene.camPos = [0, 3, 2]
     scene.camAngle = [0, -np.pi/4, 0]
 
-    ground = pyflex.KBox("ground", center=[0, 0, 0], scale=[2, 0.1, 2], color=[0.9, 0.9, 0.9, 1])
+    ground = flex.KBox("ground", center=[0, 0, 0], scale=[2, 0.1, 2], color=[0.9, 0.9, 0.9, 1])
     scene.add(ground)
 
-    left_ground = pyflex.KBox("left", center = [-0.75, 0.3, 0.5], scale=[0.5, 0.6, 1], color=[0.9, 0, 0, 1])
+    left_ground = flex.KBox("left", center = [-0.75, 0.3, 0.5], scale=[0.5, 0.6, 1], color=[0.9, 0, 0, 1])
     scene.add(left_ground)
 
-    right_ground = pyflex.KBox("left", center = [0.75, 0.3, 0.5], scale=[0.5, 0.6, 1], color=[0.9, 0, 0, 1])
+    right_ground = flex.KBox("left", center = [0.75, 0.3, 0.5], scale=[0.5, 0.6, 1], color=[0.9, 0, 0, 1])
     scene.add(right_ground)
 
-    door = pyflex.KBox("door", center = [0, 0.75, 0], scale=[2, 1.5, 0.1], color=[0.0, 0.8, 0.7, 1])
+    door = flex.KBox("door", center = [0, 0.75, 0], scale=[2, 1.5, 0.1], color=[0.0, 0.8, 0.7, 1])
     scene.add(door)
 
     rr = 0.06
-    fluid = pyflex.Fluid(
+    fluid = flex.Fluid(
         "fluid", [-0.99, 0.1, -0.99], int(2/rr), int(1.5/rr), int(0.9/rr), 0.055, [1, 0.425, 0.55, 1.], 1.
     )
     scene.add(fluid)
@@ -192,10 +192,10 @@ def test3():
     scene.add(bunny)
     """
     spacing = 0.05
-    sphere = pyflex.Shape("sphere", "/home/hza/fluid/PyFlex/data/sphere.ply", [0.7, 0.8, 0.5], [0.3, 0.3, 0.3], 0, [0, 0, 0, 0], 0.4, spacing=spacing)
+    sphere = flex.Shape("sphere", "/home/hza/fluid/PyFlex/data/sphere.ply", [0.7, 0.8, 0.5], [0.3, 0.3, 0.3], 0, [0, 0, 0, 0], 0.4, spacing=spacing)
     scene.add(sphere)
 
-    boat = pyflex.Shape("boat", "/home/hza/fluid/PyFlex/data/box.ply", [-0.5, 0.12, 0.3], [1., 0.2, 0.6], 0, [1, 1, 0, 0], 10, spacing=spacing)
+    boat = flex.Shape("boat", "/home/hza/fluid/PyFlex/data/box.ply", [-0.5, 0.12, 0.3], [1., 0.2, 0.6], 0, [1, 1, 0, 0], 10, spacing=spacing)
     scene.add(boat)
 
     sim.reset(center=False)
@@ -218,8 +218,8 @@ def test3():
 
 def test4():
     # show the bugs of flex
-    import pyflex
-    sim = pyflex.Simulator(rendering=True)
+    import flex
+    sim = flex.Simulator(rendering=True)
     scene = sim.get_scene()
 
     radius = 0.1
@@ -239,11 +239,11 @@ def test4():
     scene.camPos = [0, 3, 2]
     scene.camAngle = [0, -np.pi/4, 0]
 
-    ground = pyflex.KBox("ground", center=[0, 0, 0], scale=[2, 0.1, 2], color=[0.9, 0.9, 0.9, 1])
+    ground = flex.KBox("ground", center=[0, 0, 0], scale=[2, 0.1, 2], color=[0.9, 0.9, 0.9, 1])
     scene.add(ground)
 
     spacing = 0.05
-    cup = pyflex.Shape("sphere", "/home/hza/fluid/PyFlex/data/cup.ply", [0, 0, 0.], [1, 1, 1], 0, [0, 0, 0, 0], 0.4, spacing=spacing)
+    cup = flex.Shape("sphere", "/home/hza/fluid/PyFlex/data/cup.ply", [0, 0, 0.], [1, 1, 1], 0, [0, 0, 0, 0], 0.4, spacing=spacing)
     scene.add(cup)
 
     #fluid = pyflex.Fluid("water", [0.3, .3, 0.3], 4, 10, 4, 0.05, invMass=1., jitter=0)
@@ -286,8 +286,8 @@ def test4():
 
 
 def test5():
-    import pyflex
-    sim = pyflex.Simulator(rendering=True)
+    import flex
+    sim = flex.Simulator(rendering=True)
     scene = sim.get_scene()
 
     radius = 0.1
@@ -309,16 +309,16 @@ def test5():
     #scene.camPos = [0, -3, 0]
     #scene.camAngle = [0, np.pi/2, 0]
 
-    ground = pyflex.KBox("ground", center=[0, 0, 0], scale=[2, 0.1, 2], color=[0.9, 0.9, 0.9, 1])
+    ground = flex.KBox("ground", center=[0, 0, 0], scale=[2, 0.1, 2], color=[0.9, 0.9, 0.9, 1])
     scene.add(ground)
 
     spacing = 0.025
-    cup = pyflex.Shape("sphere", "/home/hza/fluid/PyFlex/data/cup.ply", [0, 0, 0.], [0.3, 0.3, 0.3], 0, [0, 0, 0, 0], 0.4, spacing=spacing)
+    cup = flex.Shape("sphere", "/home/hza/fluid/PyFlex/data/cup.ply", [0, 0, 0.], [1, 1, 1], 0, [0, 0, 0, 0], 0.4, spacing=spacing)
     scene.add(cup)
 
 
-    #fluid = pyflex.Fluid("water", [0.2, .3, 0.2], 6, 30, 6, radius*0.55, invMass=1., jitter=0)
-    fluid = pyflex.Fluid("water", [0.2, .3, 0.2], 20, 100, 20, radius*0.55, invMass=1., jitter=0)
+    fluid = flex.Fluid("water", [0.2, .3, 0.2], 6, 30, 6, radius*0.55, invMass=1., jitter=0)
+    #fluid = pyflex.Fluid("water", [0.2, .3, 0.2], 20, 100, 20, radius*0.55, invMass=1., jitter=0)
     scene.add(fluid)
 
     agent = Agent(sim)
@@ -346,5 +346,5 @@ if __name__ == '__main__':
     #test2()
     #test1()
     #test4()
-    test5()
-    #test3()
+    #test5()
+    test3()
