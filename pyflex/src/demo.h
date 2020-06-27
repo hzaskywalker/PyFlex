@@ -926,6 +926,7 @@ void Init(int scene, bool centerCamera = true)
 	for (int i = 0; i < g_buffers->activeIndices.size(); ++i)
 		g_buffers->activeIndices[i] = i;
 
+
 	// resize particle buffers to fit
 	g_buffers->positions.resize(maxParticles);
 	g_buffers->velocities.resize(maxParticles);

@@ -4,19 +4,18 @@
 class Object
 {
 public:
-    Object(const string name, XVec4 color) : mName(name), color(color.data()){}
+    Object(const string name, XVec4 color) : mName(name), color(color.data()) {}
     virtual void Initialize(int group) = 0;
-    virtual void set_positions(const Eigen::MatrixXf& position)=0;
-    virtual Eigen::MatrixXf get_positions()=0;
-    virtual void set_velocities(const Eigen::MatrixXf& position)=0;
-    virtual Eigen::MatrixXf get_velocities()=0;
-    virtual void update(){} //self update
+    virtual void set_positions(const Eigen::MatrixXf &position) = 0;
+    virtual Eigen::MatrixXf get_positions() = 0;
+    virtual void set_velocities(const Eigen::MatrixXf &position) = 0;
+    virtual Eigen::MatrixXf get_velocities() = 0;
+    virtual void update() {} //self update
     const string mName;
     Vec4 color;
 };
 
-
-class KinematicObject: public Object
+class KinematicObject : public Object
 {
 public:
     int shape_id;
@@ -26,8 +25,10 @@ public:
 
     KinematicObject(const string name, XVec4 color) : Object(name, color), moveTime(0), velocity({0., 0., 0.}) {}
 
-    void update(){
-        if(moveTime>0){
+    void update()
+    {
+        if (moveTime > 0)
+        {
             auto pos = get_positions();
             pos(0) += velocity(0) * g_dt;
             pos(1) += velocity(1) * g_dt;
@@ -38,10 +39,12 @@ public:
         }
     }
 
-    void set_positions(const Eigen::MatrixXf& position){
+    void set_positions(const Eigen::MatrixXf &position)
+    {
         MapBuffers(g_buffers); // map the buffer if it's unmapped
 
-        if(position.rows() == 14){
+        if (position.rows() == 14)
+        {
             //only render the prev positions ...
             g_buffers->shapePrevPositions[shape_id].x = position(7);
             g_buffers->shapePrevPositions[shape_id].y = position(8);
@@ -50,7 +53,9 @@ public:
             g_buffers->shapePrevRotations[shape_id].y = position(11);
             g_buffers->shapePrevRotations[shape_id].z = position(12);
             g_buffers->shapePrevRotations[shape_id].w = position(13);
-        } else {
+        }
+        else
+        {
             g_buffers->shapePrevPositions[shape_id] = g_buffers->shapePositions[shape_id];
             g_buffers->shapePrevRotations[shape_id] = g_buffers->shapeRotations[shape_id];
         }
@@ -63,7 +68,8 @@ public:
         g_buffers->shapeRotations[shape_id].w = position(6);
     }
 
-    Eigen::MatrixXf get_positions(){
+    Eigen::MatrixXf get_positions()
+    {
         MapBuffers(g_buffers); // map the buffer if it's unmapped
         auto ans = Eigen::VectorXf(7);
 
@@ -77,22 +83,24 @@ public:
         return ans;
     }
 
-    void set_velocities(const Eigen::MatrixXf& velocity){
+    void set_velocities(const Eigen::MatrixXf &velocity)
+    {
         throw std::runtime_error("You can't set velocity for kinematics objects");
     }
 
-    Eigen::MatrixXf get_velocities(){
+    Eigen::MatrixXf get_velocities()
+    {
         throw std::runtime_error("You can't get velocity for kinematics objects");
     }
 };
 
-
-class KinematicBox: public KinematicObject
+class KinematicBox : public KinematicObject
 {
 public:
-    KinematicBox(string _name, XVec3 center, XVec3 scale, XVec4 rotation, XVec4 color):KinematicObject(_name, color), center(center.data()), halfEdge(scale(0)/2, scale(1)/2, scale(2)/2), rotation(rotation.data()){}
+    KinematicBox(string _name, XVec3 center, XVec3 scale, XVec4 rotation, XVec4 color) : KinematicObject(_name, color), center(center.data()), halfEdge(scale(0) / 2, scale(1) / 2, scale(2) / 2), rotation(rotation.data()) {}
 
-    void Initialize(int group){
+    void Initialize(int group)
+    {
         g_shapeColors.push_back(Vec3(color[0], color[1], color[2]));
         shape_id = g_buffers->shapePositions.size();
         AddBox(halfEdge, center, rotation);
@@ -102,18 +110,20 @@ public:
     Quat rotation;
 };
 
-
 class ParticleObject : public Object
 {
 public:
     ParticleObject(const string name, XVec4 color) : Object(name, color) {}
 
-    void set_positions(const Eigen::MatrixXf& position){
-        if(position.rows() != r-l){
-            throw std::runtime_error("size missmatch: input " + string() + " while the position of " + mName + " require " + std::to_string(r-l));
+    void set_positions(const Eigen::MatrixXf &position)
+    {
+        if (position.rows() != r - l)
+        {
+            throw std::runtime_error("size missmatch: input " + string() + " while the position of " + mName + " require " + std::to_string(r - l));
         }
         MapBuffers(g_buffers); // map the buffer if it's unmapped
-        for(int i=l,j=0;i<r;++i,++j){
+        for (int i = l, j = 0; i < r; ++i, ++j)
+        {
             auto row = position.row(j);
             g_buffers->positions[i].x = row(0);
             g_buffers->positions[i].y = row(1);
@@ -122,10 +132,12 @@ public:
         }
     }
 
-    Eigen::MatrixXf get_positions(){
+    Eigen::MatrixXf get_positions()
+    {
         MapBuffers(g_buffers); // map the buffer if it's unmapped
-        auto positions = Eigen::MatrixXf(r-l, 4);
-        for(int i=l, j=0;i<r;++i,++j){
+        auto positions = Eigen::MatrixXf(r - l, 4);
+        for (int i = l, j = 0; i < r; ++i, ++j)
+        {
             positions(j, 0) = g_buffers->positions[i].x;
             positions(j, 1) = g_buffers->positions[i].y;
             positions(j, 2) = g_buffers->positions[i].z;
@@ -134,12 +146,15 @@ public:
         return positions;
     }
 
-    void set_velocities(const Eigen::MatrixXf& velocity){
-        if(velocity.rows() != r-l){
-            throw std::runtime_error("size missmatch: input " + string() + " while the velocities of " + mName + " require " + std::to_string(r-l));
+    void set_velocities(const Eigen::MatrixXf &velocity)
+    {
+        if (velocity.rows() != r - l)
+        {
+            throw std::runtime_error("size missmatch: input " + string() + " while the velocities of " + mName + " require " + std::to_string(r - l));
         }
         MapBuffers(g_buffers); // map the buffer if it's unmapped
-        for(int i=l,j=0;i<r;++i,++j){
+        for (int i = l, j = 0; i < r; ++i, ++j)
+        {
             auto row = velocity.row(j);
             g_buffers->velocities[i].x = row(0);
             g_buffers->velocities[i].y = row(1);
@@ -147,10 +162,12 @@ public:
         }
     }
 
-    Eigen::MatrixXf get_velocities(){
+    Eigen::MatrixXf get_velocities()
+    {
         MapBuffers(g_buffers); // map the buffer if it's unmapped
-        auto velocity = Eigen::MatrixXf(r-l, 3);
-        for(int i=l, j=0;i<r;++i,++j){
+        auto velocity = Eigen::MatrixXf(r - l, 3);
+        for (int i = l, j = 0; i < r; ++i, ++j)
+        {
             velocity(j, 0) = g_buffers->velocities[i].x;
             velocity(j, 1) = g_buffers->velocities[i].y;
             velocity(j, 2) = g_buffers->velocities[i].z;
@@ -161,8 +178,6 @@ public:
     int r;
 };
 
-
-
 class ParticleShape : public ParticleObject
 {
 public:
@@ -172,14 +187,16 @@ public:
 
     //void set_positions(const Eigen::MatrixXf& position){
     //    ParticleObject::set_positions(position);
-	//	NvFlexGetRigids(g_solver, NULL, NULL, NULL, NULL, NULL, NULL, NULL, g_buffers->rigidRotations.buffer, g_buffers->rigidTranslations.buffer);
+    //	NvFlexGetRigids(g_solver, NULL, NULL, NULL, NULL, NULL, NULL, NULL, g_buffers->rigidRotations.buffer, g_buffers->rigidTranslations.buffer);
     //}
 
-    void rotate(const Eigen::MatrixXf& rotation){
+    void rotate(const Eigen::MatrixXf &rotation)
+    {
         auto position = get_positions();
         position.block(0, 0, position.rows(), 3) = position.block(0, 0, position.rows(), 3) * rotation;
         set_positions(position);
-        if(rigid){
+        if (rigid)
+        {
             auto xxx = Matrix33(Vec3(rotation(0, 0), rotation(1, 0), rotation(2, 0)), Vec3(rotation(0, 1), rotation(1, 1), rotation(2, 1)), Vec3(rotation(0, 2), rotation(1, 2), rotation(2, 2)));
             Quat ans = Quat(xxx) * g_buffers->rigidRotations[rigid_index];
 
@@ -196,9 +213,12 @@ public:
         CreateParticleShape(GetFilePathByPlatform(filename.c_str()).c_str(), lower, scale, rotation, spacing, velocity, invMass, rigid, rigidStiffness, NvFlexMakePhase(group, 0), skin, jitter, skinOffset, skinExpand, color, springStiffness);
         r = g_buffers->positions.size();
 
-        if(rigid){
-            rigid_index=g_buffers->rigidOffsets.size() - 2;
-        } else {
+        if (rigid)
+        {
+            rigid_index = g_buffers->rigidOffsets.size() - 2;
+        }
+        else
+        {
             rigid_index = -1;
         }
     }
@@ -314,19 +334,19 @@ public:
     XVec3 camPos = {6.0f, 8.0f, 18.0f};
     XVec3 camAngle = {0.0f, -DegToRad(20.0f), 0.0f};
 
-    bool _drawMesh=true;
-    bool _drawPoints=false;
-    bool _drawFluids=true;
-    bool _drawDiffuse=true;
+    bool _drawMesh = true;
+    bool _drawPoints = false;
+    bool _drawFluids = true;
+    bool _drawDiffuse = true;
     bool _wireframe = false;
+    bool _showHelp = true;
     bool _warmup = true;
 
-
     float _maxDiffuseParticles = 64 * 1024;
-    float _numExtraParticles = 48 * 1024;
+    float _numExtraParticles = 0;
     float _diffuseScale = 0.5f;
     XVec3 _sceneLower = XVec3({0.0f, 0.0f, 0.0f});
-    XVec3 _sceneUpper = XVec3({1.2f, 0.0f, 0.0f});
+    XVec3 _sceneUpper = XVec3({-FLT_MAX, -FLT_MAX, -FLT_MAX});
     //g_maxDiffuseParticles = 0;
     //g_diffuseScale = 0.5f;
 
@@ -398,7 +418,6 @@ public:
             g_camAngle = Vec3(camAngle.data());
         }
 
-
         g_warmup = _warmup;
         g_sceneLower = Vec3(_sceneLower.data());
         g_sceneUpper = Vec3(_sceneUpper.data());
@@ -430,6 +449,7 @@ public:
         g_drawEllipsoids = _drawFluids;
         g_drawDiffuse = _drawDiffuse;
         g_wireframe = _wireframe;
+        g_showHelp = _showHelp;
     }
 
     void add_objects(ObjectPtr obj)
@@ -440,28 +460,34 @@ public:
     void remove_objects(ObjectPtr obj)
     {
         //remove by name
-        for(size_t i = 0;i<objects.size();++i){
-            if(objects[i]->mName == obj->mName){
-                objects.erase(objects.begin()+i);
+        for (size_t i = 0; i < objects.size(); ++i)
+        {
+            if (objects[i]->mName == obj->mName)
+            {
+                objects.erase(objects.begin() + i);
                 break;
             }
         }
     }
 
-    void clear(){
+    void clear()
+    {
         //not sure if we need to erase it..
         objects.clear();
     }
 
-    int n_objects(){
+    int n_objects()
+    {
         return objects.size();
     }
 
-    ObjectPtr get_objects(int i){
+    ObjectPtr get_objects(int i)
+    {
         return objects[i];
     }
 
-    void Update(){
+    void Update()
+    {
         for (size_t i = 0; i < objects.size(); ++i)
             objects[i]->update();
     }
@@ -490,7 +516,6 @@ public:
     double updateBeginTime;
     double updateEndTime;
 
-
     Simulator(bool rendering)
     {
         num_sim += 1;
@@ -509,8 +534,9 @@ public:
         start = false;
     }
 
-    void pre_scene_update(){
-        if(!new_frame)
+    void pre_scene_update()
+    {
+        if (!new_frame)
             return;
         new_frame = false;
 
@@ -526,18 +552,19 @@ public:
         // Getting timers causes CPU/GPU sync, so we do it after a map
         newSimLatency = NvFlexGetDeviceLatency(g_solver, &g_GpuTimers.computeBegin, &g_GpuTimers.computeEnd, &g_GpuTimers.computeFreq);
         newGfxLatency = 0;
-        if(g_render){
+        if (g_render)
+        {
             newGfxLatency = RendererGetDeviceTimestamps(&g_GpuTimers.renderBegin, &g_GpuTimers.renderEnd, &g_GpuTimers.renderFreq);
         }
         (void)newGfxLatency;
 
-        if(g_render)
+        if (g_render)
             UpdateCamera();
 
         if (!g_pause || g_step)
         {
             UpdateEmitters();
-            if(g_render)
+            if (g_render)
                 UpdateMouse();
             UpdateWind();
             UpdateScene();
@@ -548,7 +575,7 @@ public:
 
     bool step()
     {
-        if(!start)
+        if (!start)
             throw runtime_error("You must reset the scene to step");
 
         pre_scene_update();
@@ -572,7 +599,8 @@ public:
 
         // flush out the last frame before freeing up resources in the event of a scene change
         // this is necessary for d3d12
-        if(g_render){
+        if (g_render)
+        {
             PresentFrame(g_vsync);
         }
 
@@ -609,21 +637,25 @@ public:
         }
     }
 
-    py::array_t<uint8_t> render(string mode="human"){
+    py::array_t<uint8_t> render(string mode = "human")
+    {
         pre_scene_update();
 
         renderBeginTime = GetSeconds();
         newScene = RenderStep();
         renderEndTime = GetSeconds();
 
-        if(mode == "rgb_array"){
-            auto data = new uint32_t[g_screenWidth*g_screenHeight];
-            ReadFrame((int*)data, g_screenWidth, g_screenHeight);
+        if (mode == "rgb_array")
+        {
+            auto data = new uint32_t[g_screenWidth * g_screenHeight];
+            ReadFrame((int *)data, g_screenWidth, g_screenHeight);
 
-            auto ans = py::array_t<uint8_t>({g_screenHeight, g_screenWidth, 4}, (unsigned char*)data);
+            auto ans = py::array_t<uint8_t>({g_screenHeight, g_screenWidth, 4}, (unsigned char *)data);
             delete[] data;
             return ans;
-        } else {
+        }
+        else
+        {
             return py::array_t<uint8_t>({});
         }
     }
@@ -657,20 +689,90 @@ public:
         agent->reset();
     }
 
+    void sim_srand(unsigned int seed)
+    {
+        srand(seed);
+    }
+
     ~Simulator()
     {
         destroy_scene();
     }
 
-    AgentPtr get_agent(){
+    AgentPtr get_agent()
+    {
         return agent;
+    }
+
+    Eigen::MatrixXf get_positions()
+    {
+        MapBuffers(g_buffers); // map the buffer if it's unmapped
+        int size = NvFlexGetActiveCount(g_solver);
+        auto positions = Eigen::MatrixXf(size, 4);
+        for (int i = 0; i < size; ++i)
+        {
+            positions(i, 0) = g_buffers->positions[i].x;
+            positions(i, 1) = g_buffers->positions[i].y;
+            positions(i, 2) = g_buffers->positions[i].z;
+            positions(i, 3) = g_buffers->positions[i].w;
+        }
+        return positions;
+    }
+
+    void set_positions(Eigen::MatrixXf positions)
+    {
+        // only for rendering ...
+        MapBuffers(g_buffers); // map the buffer if it's unmapped
+        int size = NvFlexGetActiveCount(g_solver);
+        for (int i = 0; i < size; ++i)
+        {
+            g_buffers->positions[i].x = positions(i, 0);
+            g_buffers->positions[i].y = positions(i, 1);
+            g_buffers->positions[i].z = positions(i, 2);
+        }
+    }
+
+    Eigen::MatrixXf get_velocities()
+    {
+        MapBuffers(g_buffers); // map the buffer if it's unmapped
+        int size = NvFlexGetActiveCount(g_solver);
+        auto velocities = Eigen::MatrixXf(size, 3);
+        for (int i = 0; i < size; ++i)
+        {
+            velocities(i, 0) = g_buffers->velocities[i].x;
+            velocities(i, 1) = g_buffers->velocities[i].y;
+            velocities(i, 2) = g_buffers->velocities[i].z;
+        }
+        return velocities;
+    }
+
+    Eigen::MatrixXi get_rigid_indices()
+    {
+        MapBuffers(g_buffers); // map the buffer if it's unmapped
+        auto edges = Eigen::MatrixXi(g_buffers->rigidIndices.size(), 2);
+        for (int i = 0; i < g_buffers->rigidOffsets.size()-1; ++i)
+        {
+            
+            int l = g_buffers->rigidOffsets[i];
+            int r = g_buffers->rigidOffsets[i+1];
+            for(int j=l;j<r;++j){
+                edges(j, 0) = i;
+                edges(j, 1) = g_buffers->rigidIndices[j];
+            }
+        }
+        return edges;
+    }
+
+    float get_dt(){
+        return g_dt;
     }
 };
 
 void Agent::update()
 {
     //clear
-    if(w||a||s||d){
+    if (w || a || s || d)
+    {
         float cc = speed * g_dt;
         for (size_t i = 0; i < objects.size(); ++i)
         {
@@ -698,5 +800,5 @@ void Agent::add_object(ObjectPtr obj)
 void Agent::reset()
 {
     //mTime = 0;
-    w=a=s=d=j=k=false;
+    w = a = s = d = j = k = false;
 }

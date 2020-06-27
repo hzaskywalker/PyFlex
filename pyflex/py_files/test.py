@@ -155,6 +155,7 @@ def test3():
     scene.dynamicFriction = 0.01
     scene.viscosity = 2.0
     scene.numIterations = 4
+    scene.numSubsteps = 6
     scene.vorticityConfinement = 40.0
     scene.fluidRestDistance = restDistance
     scene.solidPressure = 0.
