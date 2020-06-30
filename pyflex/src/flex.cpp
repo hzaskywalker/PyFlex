@@ -70,6 +70,9 @@ PYBIND11_MODULE(flex, m)
         .def("step2", &Simulator::step2)
         .def_property_readonly("velocities", &Simulator::get_velocities)
         .def_property_readonly("dt", &Simulator::get_dt)
+        .def_property_readonly("planes", &Simulator::get_planes)
+        .def_property_readonly("sceneLower", &Simulator::get_sceneLower)
+        .def_property_readonly("sceneUpper", &Simulator::get_sceneUpper)
         .def_property("positions", &Simulator::get_positions, &Simulator::set_positions)
         .def_property_readonly("rigid_indices", &Simulator::get_rigid_indices);
 
@@ -98,6 +101,7 @@ PYBIND11_MODULE(flex, m)
         .def_readwrite("numExtraParticles", &MyScene::_numExtraParticles)
         .def_readwrite("maxDiffuseParticles", &MyScene::_maxDiffuseParticles)
         .def_readwrite("diffuseScale", &MyScene::_diffuseScale)
+        .def_readwrite("fixPlanes", &MyScene::_fixplanes)
         .def_readwrite("sceneLower", &MyScene::_sceneLower)
         .def_readwrite("sceneUpper", &MyScene::_sceneUpper)
         .def("add", &MyScene::add_objects, py::arg("object") = ObjectPtr(0))
@@ -111,11 +115,11 @@ PYBIND11_MODULE(flex, m)
     PyObject.def_property_readonly("name", [](Object &shape) { return shape.mName; }).def_property("position", &Object::get_positions, &Object::set_positions)
     .def_property("velocity", &Object::get_velocities, &Object::set_velocities);
 
-    PyParticleShape.def(py::init<string, string, XVec3, XVec3, float, XVec4, float, float>(), py::arg("name"), py::arg("path"), py::arg("lower") = XVec3({0, 0, 0}), py::arg("scale") = XVec3({1., 1., 1.}), py::arg("rotation") = 0., py::arg("color") = XVec4({0.0f, 0.0f, 0.0f, 0.0f}), py::arg("invMass") = 1.0f, py::arg("spacing") = 0.05)
+    PyParticleShape.def(py::init<string, string, XVec3, XVec3, float, XVec4, float, float, XVec3, XVec3>(), py::arg("name"), py::arg("path"), py::arg("lower") = XVec3({0, 0, 0}), py::arg("scale") = XVec3({1., 1., 1.}), py::arg("rotation") = 0., py::arg("color") = XVec4({0.0f, 0.0f, 0.0f, 0.0f}), py::arg("invMass") = 1.0f, py::arg("spacing") = 0.05, py::arg("axis")=XVec3({0.0f, 1.0f, 0.0f}), py::arg("velocity")=XVec3({0.0f, 0.0f, 0.0f}))
         .def_property_readonly("filename", [](ParticleShape &shape) { return shape.filename; })
         .def("rotate", &ParticleShape::rotate, py::arg("rotation"));
 
-    PyFluidGrid.def(py::init<string, XVec3, int, int, int, float, XVec4, float, float>(), py::arg("name"), py::arg("lower") = XVec3({0, 0, 0}), py::arg("dimx") = 40, py::arg("dimy") = 40, py::arg("dimz") = 40, py::arg("radius") = 0.03f, py::arg("color") = XVec4({0.113f, 0.425f, 0.55f, 1.f}), py::arg("invMass") = 1.0f, py::arg("jitter") = 0.005f);
+    PyFluidGrid.def(py::init<string, XVec3, int, int, int, float, XVec4, float, float, XVec3>(), py::arg("name"), py::arg("lower") = XVec3({0, 0, 0}), py::arg("dimx") = 40, py::arg("dimy") = 40, py::arg("dimz") = 40, py::arg("radius") = 0.03f, py::arg("color") = XVec4({0.113f, 0.425f, 0.55f, 1.f}), py::arg("invMass") = 1.0f, py::arg("jitter") = 0.005f, py::arg("velocity")=XVec3({0.0f, 0.0f, 0.0f}));
 
 
     /* ...................Kinematic Objects...................*/

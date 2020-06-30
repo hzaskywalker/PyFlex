@@ -119,6 +119,7 @@ using namespace std;
 class Agent;
 
 Agent* g_agent=nullptr;
+bool g_fixplanes = false;
 
 
 bool g_benchmark = false;
@@ -843,21 +844,29 @@ void Init(int scene, bool centerCamera = true)
 	GetShapeBounds(shapeLower, shapeUpper);
 
 	// update bounds
+	auto _lower = g_sceneLower;
+	auto _upper = g_sceneUpper;
 	g_sceneLower = Min(Min(g_sceneLower, particleLower), shapeLower);
 	g_sceneUpper = Max(Max(g_sceneUpper, particleUpper), shapeUpper); 
+	if(!g_fixplanes){
+		_lower = g_sceneLower;
+		_upper = g_sceneUpper;
+	}
 
 	g_sceneLower -= g_params.collisionDistance;
 	g_sceneUpper += g_params.collisionDistance;
+	//cout<<"g_sceneLower"<<" " << g_sceneLower.x<<" "<<g_sceneLower.y<<" "<<g_sceneLower.z<<endl;
+	//cout<<"g_sceneUpper"<<" " << g_sceneUpper.x<<" "<<g_sceneUpper.y<<" "<<g_sceneUpper.z<<endl;
 
 	// update collision planes to match flexs
 	Vec3 up = Normalize(Vec3(-g_waveFloorTilt, 1.0f, 0.0f));
 
 	(Vec4&)g_params.planes[0] = Vec4(up.x, up.y, up.z, 0.0f);
-	(Vec4&)g_params.planes[1] = Vec4(0.0f, 0.0f, 1.0f, -g_sceneLower.z);
-	(Vec4&)g_params.planes[2] = Vec4(1.0f, 0.0f, 0.0f, -g_sceneLower.x);
-	(Vec4&)g_params.planes[3] = Vec4(-1.0f, 0.0f, 0.0f, g_sceneUpper.x);
-	(Vec4&)g_params.planes[4] = Vec4(0.0f, 0.0f, -1.0f, g_sceneUpper.z);
-	(Vec4&)g_params.planes[5] = Vec4(0.0f, -1.0f, 0.0f, g_sceneUpper.y);
+	(Vec4&)g_params.planes[1] = Vec4(0.0f, 0.0f, 1.0f, -_lower.z);
+	(Vec4&)g_params.planes[2] = Vec4(1.0f, 0.0f, 0.0f, -_lower.x);
+	(Vec4&)g_params.planes[3] = Vec4(-1.0f, 0.0f, 0.0f, _upper.x);
+	(Vec4&)g_params.planes[4] = Vec4(0.0f, 0.0f, -1.0f, _upper.z);
+	(Vec4&)g_params.planes[5] = Vec4(0.0f, -1.0f, 0.0f, _upper.y);
 
 	g_wavePlane = g_params.planes[2][3];
 

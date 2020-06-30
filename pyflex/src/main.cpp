@@ -181,7 +181,7 @@ public:
 class ParticleShape : public ParticleObject
 {
 public:
-    ParticleShape(string _name, string _filename, XVec3 lower, XVec3 scale, float rotation, XVec4 color, float invMass, float spacing = 0.05f) : ParticleObject(_name, color), filename(_filename), lower(lower.data()), scale(scale.data()), rotation(rotation), spacing(spacing), velocity(Vec3(0.0f)), invMass(invMass), rigid(true), rigidStiffness(1.), skin(true), jitter(0.0f), skinOffset(0.0f), skinExpand(0.0f), springStiffness(0.0f)
+    ParticleShape(string _name, string _filename, XVec3 lower, XVec3 scale, float rotation, XVec4 color, float invMass, float spacing = 0.05f, XVec3 axis=XVec3({0.0f, 1.0f, 0.0f}), XVec3 velocity=XVec3({0.0f, 0.0f, 0.0f})) : ParticleObject(_name, color), filename(_filename), lower(lower.data()), scale(scale.data()), rotation(rotation), spacing(spacing), velocity(velocity.data()), invMass(invMass), rigid(true), rigidStiffness(1.), skin(true), jitter(0.0f), skinOffset(0.0f), skinExpand(0.0f), springStiffness(0.0f), axis(axis.data())
     {
     }
 
@@ -210,7 +210,7 @@ public:
     void Initialize(int group)
     {
         l = g_buffers->positions.size();
-        CreateParticleShape(GetFilePathByPlatform(filename.c_str()).c_str(), lower, scale, rotation, spacing, velocity, invMass, rigid, rigidStiffness, NvFlexMakePhase(group, 0), skin, jitter, skinOffset, skinExpand, color, springStiffness);
+        CreateParticleShape(GetFilePathByPlatform(filename.c_str()).c_str(), lower, scale, rotation, spacing, velocity, invMass, rigid, rigidStiffness, NvFlexMakePhase(group, 0), skin, jitter, skinOffset, skinExpand, color, springStiffness, axis);
         r = g_buffers->positions.size();
 
         if (rigid)
@@ -227,6 +227,7 @@ public:
     Vec3 lower;
     Vec3 scale;
     float rotation;
+    Vec3 axis;
     float spacing;
     Vec3 velocity;
     float invMass;
@@ -245,7 +246,7 @@ public:
 class FluidGrid : public ParticleObject
 {
 public:
-    FluidGrid(string _name, XVec3 lower, int dimx, int dimy, int dimz, float radius, XVec4 color, float invMass, float jitter = 0.005f) : ParticleObject(_name, color), lower(lower.data()), dimx(dimx), dimy(dimy), dimz(dimz), radius(radius), velocity(Vec3(0.0f)), invMass(invMass), rigid(false), rigidStiffness(0), jitter(jitter)
+    FluidGrid(string _name, XVec3 lower, int dimx, int dimy, int dimz, float radius, XVec4 color, float invMass, float jitter = 0.005f, XVec3 velocity=XVec3({0.0f, 0.0f, 0.0f})) : ParticleObject(_name, color), lower(lower.data()), dimx(dimx), dimy(dimy), dimz(dimz), radius(radius), velocity(velocity.data()), invMass(invMass), rigid(false), rigidStiffness(0), jitter(jitter)
     {
     }
 
@@ -345,6 +346,7 @@ public:
     float _maxDiffuseParticles = 64 * 1024;
     float _numExtraParticles = 0;
     float _diffuseScale = 0.5f;
+    bool _fixplanes = false;
     XVec3 _sceneLower = XVec3({0.0f, 0.0f, 0.0f});
     XVec3 _sceneUpper = XVec3({-FLT_MAX, -FLT_MAX, -FLT_MAX});
     //g_maxDiffuseParticles = 0;
@@ -450,6 +452,8 @@ public:
         g_drawDiffuse = _drawDiffuse;
         g_wireframe = _wireframe;
         g_showHelp = _showHelp;
+
+        g_fixplanes = _fixplanes;
     }
 
     void add_objects(ObjectPtr obj)
@@ -732,6 +736,20 @@ public:
         }
     }
 
+    Eigen::MatrixXf get_planes()
+    {
+        MapBuffers(g_buffers);
+        auto planes = Eigen::MatrixXf(g_params.numPlanes, 4);
+        for (int i = 0; i < (int)g_params.numPlanes; ++i)
+        {
+            for (int j = 0; j < 4; ++j)
+            {
+                planes(i, j) = g_params.planes[i][j];
+            }
+        }
+        return planes;
+    }
+
     Eigen::MatrixXf get_velocities()
     {
         MapBuffers(g_buffers); // map the buffer if it's unmapped
@@ -761,6 +779,14 @@ public:
             }
         }
         return edges;
+    }
+
+    XVec3 get_sceneLower(){
+        return XVec3({g_sceneLower.x, g_sceneLower.y, g_sceneLower.z});
+    }
+
+    XVec3 get_sceneUpper(){
+        return XVec3({g_sceneUpper.x, g_sceneUpper.y, g_sceneUpper.z});
     }
 
     float get_dt(){

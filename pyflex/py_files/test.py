@@ -1,4 +1,5 @@
 #Written by Henry M. Clever. November 15, 2018.
+import torch
 import cv2
 from time import time
 import tqdm
