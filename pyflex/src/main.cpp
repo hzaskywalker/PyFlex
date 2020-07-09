@@ -207,6 +207,17 @@ public:
         }
     }
 
+    Eigen::VectorXf get_pose()
+    {
+        MapBuffers(g_buffers);
+        Quat rot = g_buffers->rigidRotations[rigid_index];
+        Vec3 trans = g_buffers->rigidTranslations[rigid_index];
+        auto out = Eigen::VectorXf(7);
+        out(0) = rot.w; out(1) = rot.x; out(2) = rot.y; out(3) = rot.z;
+        out(4) = trans.x; out(5) = trans.y; out(6) = trans.z;
+        return out;
+    }
+
     void Initialize(int group)
     {
         l = g_buffers->positions.size();
