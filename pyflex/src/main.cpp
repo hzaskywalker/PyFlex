@@ -775,6 +775,21 @@ public:
         return velocities;
     }
 
+
+    void set_velocities(Eigen::MatrixXf velocities)
+    {
+        // only for rendering ...
+        MapBuffers(g_buffers); // map the buffer if it's unmapped
+        int size = NvFlexGetActiveCount(g_solver);
+        for (int i = 0; i < size; ++i)
+        {
+            g_buffers->velocities[i].x = velocities(i, 0);
+            g_buffers->velocities[i].y = velocities(i, 1);
+            g_buffers->velocities[i].z = velocities(i, 2);
+        }
+    }
+
+
     Eigen::MatrixXi get_rigid_indices()
     {
         MapBuffers(g_buffers); // map the buffer if it's unmapped

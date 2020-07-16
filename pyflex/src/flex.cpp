@@ -68,12 +68,12 @@ PYBIND11_MODULE(flex, m)
         .def("step", &Simulator::step)
         .def("srand", &Simulator::sim_srand, py::arg("seed")=0)
         .def("step2", &Simulator::step2)
-        .def_property_readonly("velocities", &Simulator::get_velocities)
         .def_property_readonly("dt", &Simulator::get_dt)
         .def_property_readonly("planes", &Simulator::get_planes)
         .def_property_readonly("sceneLower", &Simulator::get_sceneLower)
         .def_property_readonly("sceneUpper", &Simulator::get_sceneUpper)
         .def_property("positions", &Simulator::get_positions, &Simulator::set_positions)
+        .def_property("velocities", &Simulator::get_velocities, &Simulator::set_velocities)
         .def_property_readonly("rigid_indices", &Simulator::get_rigid_indices);
 
     PyScene.def(py::init<char *>(), py::arg("name"))
