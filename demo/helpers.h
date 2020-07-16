@@ -1227,6 +1227,9 @@ void CalculateRigidLocalPositions(const Vec4* restPositions, const int* offsets,
 		{
 			const int r = indices[j];
 
+			//cout<<count<<" "<<r<<" "<<j<<" "<<r<<endl;
+			if(count != j)
+				throw runtime_error("count != j for rigid bodies");
 			localPositions[count++] = Vec3(restPositions[r]) - translations[i];
 		}
 	}

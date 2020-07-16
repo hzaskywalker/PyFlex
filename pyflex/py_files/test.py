@@ -268,23 +268,27 @@ def test4():
 
     pos = cup.position
     #print(np.dot(pos[:,:3], [[0, 1, 0], [1, 0, 0], [0, 0, -1]])[:10])
+    #pos = np.dot(pos[:,:3], [[0, 1, 0], [1, 0, 0], [0, 0, -1]])[:10]
     #cup.position = pos
-    ang = np.pi * 0.99 # mysterious behavior if I set this to np.pi
-    cup.rotate([[np.cos(ang), np.sin(ang), 0], [-np.sin(ang), np.cos(ang), 0], [0, 0, 1]])
-    pos = cup.position
-    print(pos[:10])
-
-    pos[:, 1] += 2
-    cup.position = pos
+    #ang = np.pi * 0.99 # mysterious behavior if I set this to np.pi
+    ang = np.pi
+    #cup.rotate([[np.cos(ang), np.sin(ang), 0], [-np.sin(ang), np.cos(ang), 0], [0, 0, 1]])
+    #print(pos[:10])
+    pos[:, 0] = 1 - pos[:, 0]
+    pos[:, 1] = 2 - pos[:, 1]
+    #pos[:, 1] = - pos[:, 1]
+    #pos = cup.position
+    #pos[:, 1] += 2
+    sim.positions = pos
 
     while True:
-        sim.step()
         #print(cup.position[0, 1])
-        img = sim.render()[::-1, :,[2, 1, 0]]
+        img = sim.render('rgb_array')[::-1, :,[2, 1, 0]]
         import cv2
         cv2.imshow('x', img)
         cv2.waitKey(0)
         #input()
+        sim.step()
 
 
 def test5():
@@ -347,6 +351,6 @@ def test5():
 if __name__ == '__main__':
     #test2()
     #test1()
-    #test4()
+    test4()
     #test5()
-    test3()
+    #test3()

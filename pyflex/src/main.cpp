@@ -1,5 +1,6 @@
 #include "demo.h"
 #include "main.h"
+#include "Eigen/Geometry"
 
 class Object
 {
@@ -11,6 +12,7 @@ public:
     virtual void set_velocities(const Eigen::MatrixXf &position) = 0;
     virtual Eigen::MatrixXf get_velocities() = 0;
     virtual void update() {} //self update
+    virtual void update_rigid_rotations() {} //self update
     const string mName;
     Vec4 color;
 };
@@ -121,6 +123,7 @@ public:
         {
             throw std::runtime_error("size missmatch: input " + string() + " while the position of " + mName + " require " + std::to_string(r - l));
         }
+        g_set_rigid = true;
         MapBuffers(g_buffers); // map the buffer if it's unmapped
         for (int i = l, j = 0; i < r; ++i, ++j)
         {
@@ -192,6 +195,7 @@ public:
 
     void rotate(const Eigen::MatrixXf &rotation)
     {
+        g_set_rigid = true;
         auto position = get_positions();
         position.block(0, 0, position.rows(), 3) = position.block(0, 0, position.rows(), 3) * rotation;
         set_positions(position);
@@ -205,6 +209,52 @@ public:
             g_buffers->rigidRotations[rigid_index].z = ans.z;
             g_buffers->rigidRotations[rigid_index].w = ans.w;
         }
+    }
+
+    void update_rigid_rotations(){
+        auto tmp = get_positions();
+        //cout<<"UPDATE"<<endl;
+        Eigen::MatrixXf position = tmp.block(0, 0, tmp.rows(), 3);
+        Eigen::Vector3f c = position.colwise().mean(); 
+        //double cc[] = {0, 0, 0};
+        for(size_t i = 0;i<position.rows();++i){
+            for(size_t j=0; j<3; ++j){
+                position(i, j) = position(i, j) - c(j);
+                //cc[j] += position(i, j);
+            }
+        }
+        //cout<<cc[0] <<" "<<cc[1]<<" "<<cc[2]<<endl;
+        //cout<<position.rows()<<" "<<position.cols()<<endl;
+
+        //cout<<position.size()<<endl;
+        //cout<<"get center pose"<<" "<<position.rows()<<endl;
+
+        auto local_pose = Eigen::MatrixXf(position.rows(), 3);
+
+		const int startIndex = g_buffers->rigidOffsets[rigid_index];
+		const int endIndex = g_buffers->rigidOffsets[rigid_index+1];
+		for (int j=startIndex; j < endIndex; ++j)
+		{
+			//const int r = indices[j];
+			//localPositions[count++] = Vec3(restPositions[r]) - translations[i];
+            auto tmp = local_pose.row(j-startIndex);
+            tmp(0) = g_buffers->rigidLocalPositions[j].x;
+            tmp(1) = g_buffers->rigidLocalPositions[j].y;
+            tmp(2) = g_buffers->rigidLocalPositions[j].z;
+        }
+        //cout<<"get local pose"<<endl;
+        //cout<<local_pose.size()<<endl;
+        //cout<<position.size()<<endl;
+        auto rotation = Eigen::umeyama(local_pose.transpose(), position.transpose(), false);
+        //cout<<"get rotation"<<" "<<rotation.rows()<<" "<<rotation.cols()<<endl;
+        //cout<<rotation<<endl;
+        auto xxx = Matrix33(Vec3(rotation(0, 0), rotation(1, 0), rotation(2, 0)), Vec3(rotation(0, 1), rotation(1, 1), rotation(2, 1)), Vec3(rotation(0, 2), rotation(1, 2), rotation(2, 2)));
+        Quat ans = Quat(xxx);
+        //cout<<" get quat"<<endl;
+        g_buffers->rigidRotations[rigid_index].x = ans.x;
+        g_buffers->rigidRotations[rigid_index].y = ans.y;
+        g_buffers->rigidRotations[rigid_index].z = ans.z;
+        g_buffers->rigidRotations[rigid_index].w = ans.w;
     }
 
     Eigen::VectorXf get_pose()
@@ -507,6 +557,12 @@ public:
             objects[i]->update();
     }
 
+    void update_rigid_rotations(){
+        for(size_t i=0;i<objects.size();++i){
+            objects[i]->update_rigid_rotations();
+        }
+    }
+
     vector<ObjectPtr> objects;
 };
 
@@ -585,6 +641,11 @@ public:
             UpdateScene();
             //if(g_agent!=nullptr)
             //    g_agent->update();
+        }
+
+        //TODO
+        if(g_set_rigid){
+            myscene->update_rigid_rotations();
         }
     }
 
@@ -736,6 +797,7 @@ public:
 
     void set_positions(Eigen::MatrixXf positions)
     {
+        g_set_rigid = true;
         // only for rendering ...
         MapBuffers(g_buffers); // map the buffer if it's unmapped
         int size = NvFlexGetActiveCount(g_solver);
@@ -745,6 +807,10 @@ public:
             g_buffers->positions[i].y = positions(i, 1);
             g_buffers->positions[i].z = positions(i, 2);
         }
+
+        // update the attributes of the rigids ...
+		//const int numRigids = g_buffers->rigidOffsets.size() - 1;
+        //CalculateRigidCentersOfMass(&g_buffers->positions[0], g_buffers->positions.size(), &g_buffers->rigidOffsets[0], &g_buffers->rigidTranslations[0], &g_buffers->rigidIndices[0], numRigids);
     }
 
     Eigen::MatrixXf get_planes()

@@ -138,6 +138,7 @@ bool g_extensions = true;
 bool g_teamCity = false;
 bool g_interop = false;
 bool g_d3d12 = false;
+bool g_set_rigid = false;
 bool g_useAsyncCompute = true;		
 bool g_increaseGfxLoadForAsyncComputeTesting = false;
 int g_graphics = 0;	// 0=ogl, 1=DX11, 2=DX12
@@ -2041,12 +2042,21 @@ int RenderStep()
 void FlexStep()
 {
 	//ensure the buffer is unmapped
+	MapBuffers(g_buffers);
+	//cout<<"C++: "<<g_buffers->positions[0].x<<" "<<g_buffers->positions[0].y<<" "<<g_buffers->positions[0].z<<endl;
+	//cout<<"C++: "<<g_buffers->velocities[0].x<<" "<<g_buffers->velocities[0].y<<" "<<g_buffers->velocities[0].z<<endl;
 	UnmapBuffers(g_buffers);
 	// send any particle updates to the solver
 	NvFlexSetParticles(g_solver, g_buffers->positions.buffer, NULL);
 	NvFlexSetVelocities(g_solver, g_buffers->velocities.buffer, NULL);
 	NvFlexSetPhases(g_solver, g_buffers->phases.buffer, NULL);
 	NvFlexSetActive(g_solver, g_buffers->activeIndices.buffer, NULL);
+
+	// update rigid constraints...
+	if(g_set_rigid){
+		NvFlexSetRigids(g_solver, g_buffers->rigidOffsets.buffer, g_buffers->rigidIndices.buffer, g_buffers->rigidLocalPositions.buffer, g_buffers->rigidLocalNormals.buffer, g_buffers->rigidCoefficients.buffer, g_buffers->rigidPlasticThresholds.buffer, g_buffers->rigidPlasticCreeps.buffer, g_buffers->rigidRotations.buffer, g_buffers->rigidTranslations.buffer, g_buffers->rigidOffsets.size() - 1, g_buffers->rigidIndices.size());
+		g_set_rigid = false;
+	}
 
 	NvFlexSetActiveCount(g_solver, g_buffers->activeIndices.size());
 
@@ -2154,7 +2164,7 @@ void UpdateFrame()
 		UpdateEmitters();
 		if(g_render)
 			UpdateMouse();
-		UpdateWind();
+		//UpdateWind();
 		UpdateScene();
 		if(g_agent!=nullptr)
 			g_agent->update();
