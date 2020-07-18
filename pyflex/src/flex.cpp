@@ -120,7 +120,7 @@ PYBIND11_MODULE(flex, m)
         .def("rotate", &ParticleShape::rotate, py::arg("rotation"))
         .def_property_readonly("pose", &ParticleShape::get_pose);
 
-    PyFluidGrid.def(py::init<string, XVec3, int, int, int, float, XVec4, float, float, XVec3>(), py::arg("name"), py::arg("lower") = XVec3({0, 0, 0}), py::arg("dimx") = 40, py::arg("dimy") = 40, py::arg("dimz") = 40, py::arg("radius") = 0.03f, py::arg("color") = XVec4({0.113f, 0.425f, 0.55f, 1.f}), py::arg("invMass") = 1.0f, py::arg("jitter") = 0.005f, py::arg("velocity")=XVec3({0.0f, 0.0f, 0.0f}));
+    PyFluidGrid.def(py::init<string, XVec3, int, int, int, float, XVec4, float, float, XVec3, int>(), py::arg("name"), py::arg("lower") = XVec3({0, 0, 0}), py::arg("dimx") = 40, py::arg("dimy") = 40, py::arg("dimz") = 40, py::arg("radius") = 0.03f, py::arg("color") = XVec4({0.113f, 0.425f, 0.55f, 1.f}), py::arg("invMass") = 1.0f, py::arg("jitter") = 0.005f, py::arg("velocity")=XVec3({0.0f, 0.0f, 0.0f}), py::arg("new_group")=0);
 
 
     /* ...................Kinematic Objects...................*/

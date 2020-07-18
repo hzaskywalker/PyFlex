@@ -307,14 +307,16 @@ public:
 class FluidGrid : public ParticleObject
 {
 public:
-    FluidGrid(string _name, XVec3 lower, int dimx, int dimy, int dimz, float radius, XVec4 color, float invMass, float jitter = 0.005f, XVec3 velocity=XVec3({0.0f, 0.0f, 0.0f})) : ParticleObject(_name, color), lower(lower.data()), dimx(dimx), dimy(dimy), dimz(dimz), radius(radius), velocity(velocity.data()), invMass(invMass), rigid(false), rigidStiffness(0), jitter(jitter)
+    FluidGrid(string _name, XVec3 lower, int dimx, int dimy, int dimz, float radius, XVec4 color, float invMass, float jitter = 0.005f, XVec3 velocity=XVec3({0.0f, 0.0f, 0.0f}), int new_group=0) : ParticleObject(_name, color), lower(lower.data()), dimx(dimx), dimy(dimy), dimz(dimz), radius(radius), velocity(velocity.data()), invMass(invMass), rigid(false), rigidStiffness(0), jitter(jitter), new_group(new_group)
     {
     }
 
     void Initialize(int group)
     {
+        if(!new_group)
+            group = 0; // all fluids are in the same group
         l = g_buffers->positions.size();
-        CreateParticleGrid(lower, dimx, dimy, dimz, radius, velocity, invMass, rigid, rigidStiffness, NvFlexMakePhase(0, eNvFlexPhaseSelfCollide | eNvFlexPhaseFluid), jitter);
+        CreateParticleGrid(lower, dimx, dimy, dimz, radius, velocity, invMass, rigid, rigidStiffness, NvFlexMakePhase(group, eNvFlexPhaseSelfCollide | eNvFlexPhaseFluid), jitter);
         r = g_buffers->positions.size();
 
         g_fluidColor = color;
@@ -328,6 +330,7 @@ public:
     bool rigid;
     float rigidStiffness;
     int phase;
+    int new_group;
     float jitter;
 };
 
@@ -732,6 +735,9 @@ public:
         }
         else
         {
+            if(mode == "present"){
+                PresentFrame(g_vsync);
+            }
             return py::array_t<uint8_t>({});
         }
     }
