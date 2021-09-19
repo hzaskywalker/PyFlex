@@ -1,3 +1,7 @@
+Note by Zhiao: yet another pywrapper for Nvidia Flex.
+
+----
+
 FleX Bindings for Python: pyFleX 0.1
 ===================
 Currently, the bindings here are just used to run the FleX demo. I have only uploaded the boilerplate code that lets you initialize the simulator with a single wrapper, update the frame, and send and receive variables in python. For example, there is a function that grabs particle positions. The python binding `bindings.grab_x_pos_particle(i)` allows you to grab the x position of any particle in the scene. An example for sending variables to C++ is that you can add variables to the `void initialize()` function in `bindings/main_python.cpp` and pass directly from python.
