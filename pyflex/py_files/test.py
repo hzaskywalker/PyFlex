@@ -245,7 +245,7 @@ def test4():
     scene.add(ground)
 
     spacing = 0.05
-    cup = flex.Shape("sphere", "/home/hza/fluid/PyFlex/data/cup.ply", [0, 0, 0.], [1, 1, 1], 0, [0, 0, 0, 0], 0.4, spacing=spacing)
+    cup = flex.Shape("sphere", "/home/hza/fluid/PyFlex/data/bunny.ply", [0, 0, 0.], [1, 1, 1], 0, [0, 0, 0, 0], 0.4, spacing=spacing, rigid=True, rigidStiffness=0.1)
     scene.add(cup)
 
     #fluid = pyflex.Fluid("water", [0.3, .3, 0.3], 4, 10, 4, 0.05, invMass=1., jitter=0)
@@ -283,10 +283,11 @@ def test4():
 
     while True:
         #print(cup.position[0, 1])
-        img = sim.render('rgb_array')[::-1, :,[2, 1, 0]]
-        import cv2
-        cv2.imshow('x', img)
-        cv2.waitKey(0)
+        #img = sim.render('rgb_array')[::-1, :,[2, 1, 0]]
+        img = sim.render('human')
+        # import cv2
+        #cv2.imshow('x', img)
+        #cv2.waitKey(1)
         #input()
         sim.step()
 
@@ -351,6 +352,6 @@ def test5():
 if __name__ == '__main__':
     #test2()
     #test1()
-    #test4()
-    test5()
+    test4()
+    #test5()
     #test3()

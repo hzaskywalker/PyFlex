@@ -184,7 +184,7 @@ public:
 class ParticleShape : public ParticleObject
 {
 public:
-    ParticleShape(string _name, string _filename, XVec3 lower, XVec3 scale, float rotation, XVec4 color, float invMass, float spacing = 0.05f, XVec3 axis=XVec3({0.0f, 1.0f, 0.0f}), XVec3 velocity=XVec3({0.0f, 0.0f, 0.0f})) : ParticleObject(_name, color), filename(_filename), lower(lower.data()), scale(scale.data()), rotation(rotation), spacing(spacing), velocity(velocity.data()), invMass(invMass), rigid(true), rigidStiffness(1.), skin(true), jitter(0.0f), skinOffset(0.0f), skinExpand(0.0f), springStiffness(0.0f), axis(axis.data())
+    ParticleShape(string _name, string _filename, XVec3 lower, XVec3 scale, float rotation, XVec4 color, float invMass, float spacing = 0.05f, XVec3 axis=XVec3({0.0f, 1.0f, 0.0f}), XVec3 velocity=XVec3({0.0f, 0.0f, 0.0f}), bool rigid=true, float rigidStiffness=1.0) : ParticleObject(_name, color), filename(_filename), lower(lower.data()), scale(scale.data()), rotation(rotation), spacing(spacing), velocity(velocity.data()), invMass(invMass), rigid(rigid), rigidStiffness(rigidStiffness), skin(true), jitter(0.0f), skinOffset(0.0f), skinExpand(0.0f), springStiffness(0.0f), axis(axis.data())
     {
     }
 
@@ -212,49 +212,54 @@ public:
     }
 
     void update_rigid_rotations(){
-        auto tmp = get_positions();
-        //cout<<"UPDATE"<<endl;
-        Eigen::MatrixXf position = tmp.block(0, 0, tmp.rows(), 3);
-        Eigen::Vector3f c = position.colwise().mean(); 
-        //double cc[] = {0, 0, 0};
-        for(size_t i = 0;i<position.rows();++i){
-            for(size_t j=0; j<3; ++j){
-                position(i, j) = position(i, j) - c(j);
-                //cc[j] += position(i, j);
+        if (rigid)
+        {
+            auto tmp = get_positions();
+            //cout<<"UPDATE"<<endl;
+            Eigen::MatrixXf position = tmp.block(0, 0, tmp.rows(), 3);
+            Eigen::Vector3f c = position.colwise().mean();
+            //double cc[] = {0, 0, 0};
+            for (size_t i = 0; i < position.rows(); ++i)
+            {
+                for (size_t j = 0; j < 3; ++j)
+                {
+                    position(i, j) = position(i, j) - c(j);
+                    //cc[j] += position(i, j);
+                }
             }
+            //cout<<cc[0] <<" "<<cc[1]<<" "<<cc[2]<<endl;
+            //cout<<position.rows()<<" "<<position.cols()<<endl;
+
+            //cout<<position.size()<<endl;
+            //cout<<"get center pose"<<" "<<position.rows()<<endl;
+
+            auto local_pose = Eigen::MatrixXf(position.rows(), 3);
+
+            const int startIndex = g_buffers->rigidOffsets[rigid_index];
+            const int endIndex = g_buffers->rigidOffsets[rigid_index + 1];
+            for (int j = startIndex; j < endIndex; ++j)
+            {
+                //const int r = indices[j];
+                //localPositions[count++] = Vec3(restPositions[r]) - translations[i];
+                auto tmp = local_pose.row(j - startIndex);
+                tmp(0) = g_buffers->rigidLocalPositions[j].x;
+                tmp(1) = g_buffers->rigidLocalPositions[j].y;
+                tmp(2) = g_buffers->rigidLocalPositions[j].z;
+            }
+            //cout<<"get local pose"<<endl;
+            //cout<<local_pose.size()<<endl;
+            //cout<<position.size()<<endl;
+            auto rotation = Eigen::umeyama(local_pose.transpose(), position.transpose(), false);
+            //cout<<"get rotation"<<" "<<rotation.rows()<<" "<<rotation.cols()<<endl;
+            //cout<<rotation<<endl;
+            auto xxx = Matrix33(Vec3(rotation(0, 0), rotation(1, 0), rotation(2, 0)), Vec3(rotation(0, 1), rotation(1, 1), rotation(2, 1)), Vec3(rotation(0, 2), rotation(1, 2), rotation(2, 2)));
+            Quat ans = Quat(xxx);
+            //cout<<" get quat"<<endl;
+            g_buffers->rigidRotations[rigid_index].x = ans.x;
+            g_buffers->rigidRotations[rigid_index].y = ans.y;
+            g_buffers->rigidRotations[rigid_index].z = ans.z;
+            g_buffers->rigidRotations[rigid_index].w = ans.w;
         }
-        //cout<<cc[0] <<" "<<cc[1]<<" "<<cc[2]<<endl;
-        //cout<<position.rows()<<" "<<position.cols()<<endl;
-
-        //cout<<position.size()<<endl;
-        //cout<<"get center pose"<<" "<<position.rows()<<endl;
-
-        auto local_pose = Eigen::MatrixXf(position.rows(), 3);
-
-		const int startIndex = g_buffers->rigidOffsets[rigid_index];
-		const int endIndex = g_buffers->rigidOffsets[rigid_index+1];
-		for (int j=startIndex; j < endIndex; ++j)
-		{
-			//const int r = indices[j];
-			//localPositions[count++] = Vec3(restPositions[r]) - translations[i];
-            auto tmp = local_pose.row(j-startIndex);
-            tmp(0) = g_buffers->rigidLocalPositions[j].x;
-            tmp(1) = g_buffers->rigidLocalPositions[j].y;
-            tmp(2) = g_buffers->rigidLocalPositions[j].z;
-        }
-        //cout<<"get local pose"<<endl;
-        //cout<<local_pose.size()<<endl;
-        //cout<<position.size()<<endl;
-        auto rotation = Eigen::umeyama(local_pose.transpose(), position.transpose(), false);
-        //cout<<"get rotation"<<" "<<rotation.rows()<<" "<<rotation.cols()<<endl;
-        //cout<<rotation<<endl;
-        auto xxx = Matrix33(Vec3(rotation(0, 0), rotation(1, 0), rotation(2, 0)), Vec3(rotation(0, 1), rotation(1, 1), rotation(2, 1)), Vec3(rotation(0, 2), rotation(1, 2), rotation(2, 2)));
-        Quat ans = Quat(xxx);
-        //cout<<" get quat"<<endl;
-        g_buffers->rigidRotations[rigid_index].x = ans.x;
-        g_buffers->rigidRotations[rigid_index].y = ans.y;
-        g_buffers->rigidRotations[rigid_index].z = ans.z;
-        g_buffers->rigidRotations[rigid_index].w = ans.w;
     }
 
     Eigen::VectorXf get_pose()
@@ -271,7 +276,11 @@ public:
     void Initialize(int group)
     {
         l = g_buffers->positions.size();
-        CreateParticleShape(GetFilePathByPlatform(filename.c_str()).c_str(), lower, scale, rotation, spacing, velocity, invMass, rigid, rigidStiffness, NvFlexMakePhase(group, 0), skin, jitter, skinOffset, skinExpand, color, springStiffness, axis);
+
+		//CreateParticleGrid(Vec3(x_0, y_0, z_0), 4, 4, 4, restDistance, Vec3(0.0f), 1.0f, false, 0.0f, NvFlexMakePhase(0, eNvFlexPhaseSelfCollide), 0.0f);
+        auto yyyy = rigid?eNvFlexPhaseSelfCollide:0;
+
+        CreateParticleShape(GetFilePathByPlatform(filename.c_str()).c_str(), lower, scale, rotation, spacing, velocity, invMass, rigid, rigidStiffness, NvFlexMakePhase(group, yyyy), skin, jitter, skinOffset, skinExpand, color, springStiffness, axis);
         r = g_buffers->positions.size();
 
         if (rigid)

@@ -115,7 +115,7 @@ PYBIND11_MODULE(flex, m)
     PyObject.def_property_readonly("name", [](Object &shape) { return shape.mName; }).def_property("position", &Object::get_positions, &Object::set_positions)
     .def_property("velocity", &Object::get_velocities, &Object::set_velocities);
 
-    PyParticleShape.def(py::init<string, string, XVec3, XVec3, float, XVec4, float, float, XVec3, XVec3>(), py::arg("name"), py::arg("path"), py::arg("lower") = XVec3({0, 0, 0}), py::arg("scale") = XVec3({1., 1., 1.}), py::arg("rotation") = 0., py::arg("color") = XVec4({0.0f, 0.0f, 0.0f, 0.0f}), py::arg("invMass") = 1.0f, py::arg("spacing") = 0.05, py::arg("axis")=XVec3({0.0f, 1.0f, 0.0f}), py::arg("velocity")=XVec3({0.0f, 0.0f, 0.0f}))
+    PyParticleShape.def(py::init<string, string, XVec3, XVec3, float, XVec4, float, float, XVec3, XVec3, bool, float>(), py::arg("name"), py::arg("path"), py::arg("lower") = XVec3({0, 0, 0}), py::arg("scale") = XVec3({1., 1., 1.}), py::arg("rotation") = 0., py::arg("color") = XVec4({0.0f, 0.0f, 0.0f, 0.0f}), py::arg("invMass") = 1.0f, py::arg("spacing") = 0.05, py::arg("axis")=XVec3({0.0f, 1.0f, 0.0f}), py::arg("velocity")=XVec3({0.0f, 0.0f, 0.0f}), py::arg("rigid")=true, py::arg("rigidStiffness")=1.0)
         .def_property_readonly("filename", [](ParticleShape &shape) { return shape.filename; })
         .def("rotate", &ParticleShape::rotate, py::arg("rotation"))
         .def_property_readonly("pose", &ParticleShape::get_pose);
